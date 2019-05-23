@@ -26,12 +26,12 @@ void ALobbyNetworkProcessor::BeginPlay()
 	TArray<AActor*> actors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALobbyManager::StaticClass(), actors);
 	if (actors.Num() == 0) {
-		LOG_SCREEN("LobbyManager must be placed in level!!!!");
-		LOG(Error, "LobbyManager must be placed in level!!!!");
+		JHNET_LOG_SCREEN("LobbyManager must be placed in level!!!!");
+		JHNET_LOG(Error, "LobbyManager must be placed in level!!!!");
 	}
 	else if (actors.Num() > 1) {
-		LOG_SCREEN("Only one of LobbyManager must be placed in level!!!!");
-		LOG(Error, "Only one of LobbyManager must be placed in level!!!!");
+		JHNET_LOG_SCREEN("Only one of LobbyManager must be placed in level!!!!");
+		JHNET_LOG(Error, "Only one of LobbyManager must be placed in level!!!!");
 	}
 	else {
 		LobbyManager = (ALobbyManager*)actors[0];

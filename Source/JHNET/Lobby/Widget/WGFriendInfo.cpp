@@ -18,12 +18,12 @@ UWGFriendInfo::~UWGFriendInfo() {
 void UWGFriendInfo::RefreshFriendInfo() {
 	auto world = GetWorld();
 	if (world == nullptr) {
-		LOG(Error, "Get World Error");
+		JHNET_LOG(Error, "Get World Error");
 		return;
 	}
 	UJHNETGameInstance* gameInstance = Cast<UJHNETGameInstance>(world->GetGameInstance());
 	if (gameInstance == nullptr) {
-		LOG(Error, "GameInstance Casting Error");
+		JHNET_LOG(Error, "GameInstance Casting Error");
 		return;
 	}
 	if (gameInstance->GetNetworkSystem()->OnSteam()) {
@@ -50,7 +50,7 @@ void UWGFriendInfo::RefreshFriendInfo() {
 		}
 	}
 	else {
-		LOG(Warning, "Steam is not running.");
+		JHNET_LOG(Warning, "Steam is not running.");
 	}
 }
 UFriendInformation * UWGFriendInfo::GetFriendInformationBySteamID(const UINT64 & id)

@@ -38,9 +38,9 @@ void ACommonNetworkProcessor::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	_gameInstance = Cast<UJHNETGameInstance>(AActor::GetGameInstance());
-	CHECK(_gameInstance);
+	JHNET_CHECK(_gameInstance);
 	_netSystem = _gameInstance->GetNetworkSystem();
-	CHECK(_netSystem);
+	JHNET_CHECK(_netSystem);
 
 	if (_serverConnectWGClass) {
 		if (!_serverConnectWG) _serverConnectWG = CreateWidget<UUserWidget>(GetWorld(), _serverConnectWGClass);
@@ -64,7 +64,7 @@ void ACommonNetworkProcessor::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	CHECK(_gameInstance);
+	JHNET_CHECK(_gameInstance);
 	if(_gameInstance->GetNetworkSystem()->OnServer()) SendProc(DeltaSeconds);
 	GetServerState(DeltaSeconds);
 
@@ -108,7 +108,7 @@ void ACommonNetworkProcessor::SendProc(float DeltaSeconds)
 			if (allLen + packet.Get<1>() +
 				((packetCount + 5) * sizeof(int))
 				>= BUFSIZE) {
-				LOG_WARNING("Buffer limit over!!");
+				JHNET_LOG_WARNING("Buffer limit over!!");
 				break;
 			}
 			else {
@@ -134,7 +134,7 @@ void ACommonNetworkProcessor::SendProc(float DeltaSeconds)
 			cursor += packet.Get<1>();
 			if (cursor >= BUFSIZE ||
 				cursor > allLen + sizeof(int) * packetCount) {
-				LOG(Error, "Critical Error : Not matched packet...");
+				JHNET_LOG(Error, "Critical Error : Not matched packet...");
 				return;
 			}
 		}
@@ -149,7 +149,7 @@ void ACommonNetworkProcessor::SendProc(float DeltaSeconds)
 
 void ACommonNetworkProcessor::GetServerState(float DeltaSeconds)
 {
-	CHECK(_gameInstance);
+	JHNET_CHECK(_gameInstance);
 
 	if (_netSystem) {
 		ESocketInitState state = _netSystem->GetSocketState();
@@ -173,7 +173,7 @@ void ACommonNetworkProcessor::GetServerState(float DeltaSeconds)
 			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 			break;
 		default:
-			LOG_ERROR("Unknown state.");
+			JHNET_LOG_ERROR("Unknown state.");
 			break;
 		}
 	}
@@ -181,14 +181,14 @@ void ACommonNetworkProcessor::GetServerState(float DeltaSeconds)
 
 void ACommonNetworkProcessor::RecvProc(FReciveData& data)
 {
-	CHECK(_gameInstance);
+	JHNET_CHECK(_gameInstance);
 
 	int cursor = 0;
 	while (cursor < data.len) {
-		CHECK(cursor >= 0 && cursor <= BUFSIZE);
+		JHNET_CHECK(cursor >= 0 && cursor <= BUFSIZE);
 		int bufLen = IntDeserialize(data.buf, &cursor) - sizeof(EMessageType);
 		if (!(bufLen >= 0 && bufLen <= BUFSIZE)) {
-			LOG_ERROR("ASSERTION : 'bufLen >= 0 && bufLen <= BUFSIZE' buflen = %d, cursor = %d", bufLen, cursor)
+			JHNET_LOG_ERROR("ASSERTION : 'bufLen >= 0 && bufLen <= BUFSIZE' buflen = %d, cursor = %d", bufLen, cursor)
 			return;
 		}
 		EMessageType type = GetEnum(data.buf, &cursor);
@@ -236,13 +236,13 @@ void ACommonNetworkProcessor::OnRefreshRoom()
 void ACommonNetworkProcessor::Common_Echo(FReciveData& data, int& cursor, int& bufLen)
 {
 	FSerializableString res = StringDeserialize(data.buf, &cursor);
-	LOG(Warning, "%s", res.buf);
+	JHNET_LOG(Warning, "%s", res.buf);
 }
 
 void ACommonNetworkProcessor::Common_Ping(FReciveData& data, int& cursor, int& bufLen)
 {
 #ifdef DEBUG_RECV
-	LOG(Warning, "recv : COMMON_PING");
+	JHNET_LOG(Warning, "recv : COMMON_PING");
 #endif
 	shared_ptr<char[]> newBuf(new char[sizeof(EMessageType)]);
 	int len = SerializeEnum(EMessageType::COMMON_PING, newBuf.get());
@@ -252,7 +252,7 @@ void ACommonNetworkProcessor::Common_Ping(FReciveData& data, int& cursor, int& b
 void ACommonNetworkProcessor::Common_RequestID(FReciveData& data, int& cursor, int& bufLen)
 {
 #ifdef DEBUG_RECV
-	LOG(Warning, "recv : S_Common_RequestId");
+	JHNET_LOG(Warning, "recv : S_Common_RequestId");
 #endif
 	UINT64 steamID = _gameInstance->GetNetworkSystem()->GetSteamID();
 	if (steamID == 0) return;

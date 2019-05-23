@@ -12,10 +12,10 @@ PP_MACRO_OVERLOAD_RPC(NETBASECP, CLASS_NAME, FUNCTION_NAME, &CLASS_NAME::FUNCTIO
 // BindRPCFunction(NetBaseCP, AHACKEDCharacter, Move)
 #define BindRPCFunction(NETBASECP, CLASS_NAME, FUNCTION_NAME)\
 {\
-	CHECK(this);\
-	CHECK(NETBASECP);\
+	JHNET_CHECK(this);\
+	JHNET_CHECK(NETBASECP);\
 	auto rpcDelegate = NETBASECP->CreateBindableDelegateFunction(TEXT(#FUNCTION_NAME));\
-	CHECK(rpcDelegate);\
+	JHNET_CHECK(rpcDelegate);\
   	rpcDelegate->BindUObject(this, &CLASS_NAME::FUNCTION_NAME##_##);\
 }
 
@@ -74,7 +74,7 @@ UFUNCTION()\
 void FUNCTION_NAME##_##(int len, char* buf){\
 	CLASS_NAME##_##FUNCTION_NAME##_INLOOP = true;\
 	if(len != 0){\
-		LOG(Error, "Argment Error!");\
+		JHNET_LOG(Error, "Argment Error!");\
 		CLASS_NAME##_##FUNCTION_NAME##_INLOOP = false;\
 		return;\
 	}\
@@ -89,7 +89,7 @@ UFUNCTION()\
 void FUNCTION_NAME##_##(int len, char* buf){\
 	CLASS_NAME##_##FUNCTION_NAME##_INLOOP = true;\
 	if(len != GetSizeOfBuf<ARG1>(buf)){\
-		LOG(Error, "Argment Error!");\
+		JHNET_LOG(Error, "Argment Error!");\
 		CLASS_NAME##_##FUNCTION_NAME##_INLOOP = false;\
 		return;\
 	}\
@@ -106,7 +106,7 @@ void FUNCTION_NAME##_##(int len, char* buf){\
 	CLASS_NAME##_##FUNCTION_NAME##_INLOOP = true;\
 	if(len != GetSizeOfBuf<ARG1>(buf) + \
 				GetSizeOfBuf<ARG2>(buf + GetSizeOfBuf<ARG1>(buf))){\
-		LOG(Error, "Argment Error!");\
+		JHNET_LOG(Error, "Argment Error!");\
 		CLASS_NAME##_##FUNCTION_NAME##_INLOOP = false;\
 		return;\
 	}\
@@ -125,7 +125,7 @@ void FUNCTION_NAME##_##(int len, char* buf){\
 	if(len != GetSizeOfBuf<ARG1>(buf) + \
 				GetSizeOfBuf<ARG2>(buf + GetSizeOfBuf<ARG1>(buf)) + \
 				GetSizeOfBuf<ARG3>(buf + GetSizeOfBuf<ARG1>(buf) + GetSizeOfBuf<ARG2>(buf + GetSizeOfBuf<ARG1>(buf)))){\
-		LOG(Error, "Argment Error!");\
+		JHNET_LOG(Error, "Argment Error!");\
 		CLASS_NAME##_##FUNCTION_NAME##_INLOOP = false;\
 		return;\
 	}\

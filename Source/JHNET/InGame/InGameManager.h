@@ -4,7 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "Core/Network/NetworkSystem.h"
 #include "Core/JHNETGameInstance.h"
-#include "Network/InGameNetworkProcessor.h"
+#include "InGame/Network/InGameNetworkProcessor.h"
 #include "InGameManager.generated.h"
 
 UCLASS()

@@ -74,9 +74,9 @@ private:
 	AActor* NetworkSpawned(ENetSpawnType type, FVector position, FQuat rotation, const FString& objectID);
 
 	// Network RPC / SyncVar
-	// Check delayed data.
+	// JHNET_CHECK delayed data.
 	// return : Is Success? (Success or Destroyed)
-	bool CheckSavedObject(FReplicationData& data, float deltaTime);
+	bool JHNET_CHECKSavedObject(FReplicationData& data, float deltaTime);
 	bool SendToObject(FReplicationData& data);
 	
 	// Disconnect/Reconnect Proc ******
@@ -87,8 +87,8 @@ private:
 	void _ReconnectProcess();
 
 	// 싱글 플레이일경우 강제로 스킵하는 함수.
-	void _ReconnectCheck();
-	FTimerHandle _reconnectCheckTimerHandle;
+	void _ReconnectJHNET_CHECK();
+	FTimerHandle _reconnectJHNET_CHECKTimerHandle;
 
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> _disconnectWGClass;

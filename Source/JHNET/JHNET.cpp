@@ -3,5 +3,5 @@
 #include "JHNET.h"
 #include "Modules/ModuleManager.h"
 
-DEFINE_LOG_CATEGORY(JHNET_LOG);
+DEFINE_LOG_CATEGORY(LOG_JHNET);
 IMPLEMENT_MODULE( FDefaultModuleImpl, JHNET);

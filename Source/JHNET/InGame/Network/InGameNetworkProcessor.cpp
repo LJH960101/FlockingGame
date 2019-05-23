@@ -61,7 +61,7 @@ void AInGameNetworkProcessor::OnConnected()
 	// Not OnSteam But OnServer, Try force Join to game room.
 	if (_networkSystem && _networkSystem->OnServer() && !_networkSystem->OnSteam()) {
 		EnterToGame_DEBUG();
-		LOG(Warning, "Try Force Game Join...");
+		JHNET_LOG(Warning, "Try Force Game Join...");
 	}
 }
 
@@ -75,11 +75,11 @@ void AInGameNetworkProcessor::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	_gameInstance = GetGameInstance();
-	CHECK(_gameInstance);
+	JHNET_CHECK(_gameInstance);
 	_networkSystem = _gameInstance->GetNetworkSystem();
-	CHECK(_networkSystem);
+	JHNET_CHECK(_networkSystem);
 	InGameManager = _gameInstance->GetInGameManager();
-	CHECK(InGameManager);
+	JHNET_CHECK(InGameManager);
 }
 
 void AInGameNetworkProcessor::BeginPlay()
@@ -89,7 +89,7 @@ void AInGameNetworkProcessor::BeginPlay()
 	if (_networkSystem && _networkSystem->OnServer()) {
 		OnRefreshRoom();
 	}
-	GetWorldTimerManager().SetTimer(_reconnectCheckTimerHandle, this, &AInGameNetworkProcessor::_ReconnectCheck, 0.1f, false);
+	GetWorldTimerManager().SetTimer(_reconnectJHNET_CHECKTimerHandle, this, &AInGameNetworkProcessor::_ReconnectJHNET_CHECK, 0.1f, false);
 }
 
 void AInGameNetworkProcessor::OnRefreshRoom()
@@ -105,9 +105,9 @@ void AInGameNetworkProcessor::Tick(float DeltaTime)
 	// Object에 도달하지 않는 메세지를 다시 처리한다.
 	for (int i = 0; i < _savedList.Num(); ++i) {
 		FReplicationData& data = _savedList[i];
-		if (CheckSavedObject(data, DeltaTime)) {
+		if (JHNET_CHECKSavedObject(data, DeltaTime)) {
 			if (data.delayTime >= MAX_SAVED_TIME) {
-				LOG(Error, "data removed by timeout... : object : %s, usage : %s", *(data.objectHandle), *(data.usageHandle));
+				JHNET_LOG(Error, "data removed by timeout... : object : %s, usage : %s", *(data.objectHandle), *(data.usageHandle));
 			}
 			_savedList.RemoveAt(i);
 			--i;
@@ -116,7 +116,7 @@ void AInGameNetworkProcessor::Tick(float DeltaTime)
 	}
 }
 
-bool AInGameNetworkProcessor::CheckSavedObject(FReplicationData& data, float deltaTime)
+bool AInGameNetworkProcessor::JHNET_CHECKSavedObject(FReplicationData& data, float deltaTime)
 {
 	data.delayTime += deltaTime;
 	if (data.delayTime >= MAX_SAVED_TIME) return true;
@@ -128,18 +128,18 @@ bool AInGameNetworkProcessor::SendToObject(FReplicationData & data)
 {
 	AActor** targetObject = _networkActors.Find(data.objectHandle);
 	if (targetObject == nullptr || (*targetObject) == nullptr || !((*targetObject)->HasActorBegunPlay())) {
-		//LOG(Error, "Not exist object... : Object Name %s, UsageHandle %s", *(data.objectHandle), *(data.usageHandle));
+		//JHNET_LOG(Error, "Not exist object... : Object Name %s, UsageHandle %s", *(data.objectHandle), *(data.usageHandle));
 		return false;
 	}
 	// Get network base cp
 	auto cp = (*targetObject)->GetComponentByClass(UNetworkBaseCP::StaticClass());
 	if (cp == nullptr) {
-		LOG(Error, "Can't cast to NetBaseCP");
+		JHNET_LOG(Error, "Can't cast to NetBaseCP");
 		return false;
 	}
 	UNetworkBaseCP* networkCP = Cast<UNetworkBaseCP>(cp);
 	if (networkCP == nullptr) {
-		LOG(Error, "Can't cast to NetBaseCP");
+		JHNET_LOG(Error, "Can't cast to NetBaseCP");
 		return false;
 	}
 
@@ -201,7 +201,7 @@ void AInGameNetworkProcessor::_ReconnectProcess()
 	}
 }
 
-void AInGameNetworkProcessor::_ReconnectCheck()
+void AInGameNetworkProcessor::_ReconnectJHNET_CHECK()
 {
 	if (_networkSystem && _networkSystem->bNeedToResync) {
 		_ReconnectProcess();
@@ -246,9 +246,9 @@ void AInGameNetworkProcessor::GetSyncDataForce(AActor* networkActor)
 	for (int i = 0; i < _savedList.Num(); ++i) {
 		FReplicationData& data = _savedList[i];
 		if (*(_networkActors.Find(data.objectHandle)) == networkActor) {
-			if (CheckSavedObject(data, 0.0f)) {
+			if (JHNET_CHECKSavedObject(data, 0.0f)) {
 				if (data.delayTime >= MAX_SAVED_TIME) {
-					LOG(Error, "data removed by timeout... : object : %s, usage : %s", *(data.objectHandle), *(data.usageHandle));
+					JHNET_LOG(Error, "data removed by timeout... : object : %s, usage : %s", *(data.objectHandle), *(data.usageHandle));
 				}
 				_savedList.RemoveAt(i);
 				--i;
@@ -341,7 +341,7 @@ void AInGameNetworkProcessor::SetSteamID_DEBUG(const FString & steamID)
 AActor * AInGameNetworkProcessor::NetworkSpawn(ENetSpawnType type, FVector position, FQuat rotation)
 {
 	if (!IsMaster()) {
-		LOG_SCREEN("NetworkSpawn only work on master.");
+		JHNET_LOG_SCREEN("NetworkSpawn only work on master.");
 		return nullptr;
 	}
 	uint64 currentSpawnCount = _spawnCount++;
@@ -367,7 +367,7 @@ AActor * AInGameNetworkProcessor::NetworkSpawn(ENetSpawnType type, FVector posit
 UClass * AInGameNetworkProcessor::GetClassByType(const ENetSpawnType& type)
 {
 	if (classes.Find(type) == nullptr) {
-		LOG(Error, "Not registered Type.");
+		JHNET_LOG(Error, "Not registered Type.");
 		return nullptr;
 	}
 	else return classes[type];
@@ -377,13 +377,13 @@ AActor* AInGameNetworkProcessor::NetworkSpawned(ENetSpawnType type, FVector posi
 {
 	AActor* retval;
 	UClass* spawnClass = GetClassByType(type);
-	CHECK(spawnClass, nullptr);
+	JHNET_CHECK(spawnClass, nullptr);
 	FTransform newTransform = FTransform::Identity;
 	newTransform.SetLocation(position);
 	newTransform.SetRotation(rotation);
 	retval = GetWorld()->SpawnActor(spawnClass);
 	if (!retval) {
-		LOG(Error, "Can't spawn actor!!!");
+		JHNET_LOG(Error, "Can't spawn actor!!!");
 		return nullptr;
 	}
 	retval->SetActorTransform(newTransform);
@@ -403,9 +403,9 @@ void AInGameNetworkProcessor::RecvProc(FReciveData& data)
 
 	int cursor = 0;
 	while (cursor < data.len) {
-		CHECK(cursor >= 0 && cursor <= BUFSIZE);
+		JHNET_CHECK(cursor >= 0 && cursor <= BUFSIZE);
 		int bufLen = IntDeserialize(data.buf, &cursor) - sizeof(EMessageType);
-		CHECK(bufLen >= 0 && bufLen <= BUFSIZE);
+		JHNET_CHECK(bufLen >= 0 && bufLen <= BUFSIZE);
 		EMessageType type = GetEnum(data.buf, &cursor);
 		UINT64 sid = _networkSystem->GetSteamID();
 		switch (type)
@@ -471,7 +471,7 @@ void AInGameNetworkProcessor::InGame_RPC(FReciveData& data, int& cursor, int& bu
 	FString objectID = FStringDeserialize(data.buf, &cursor);
 	FString functionHandle = FStringDeserialize(data.buf, &cursor);
 	int32 len = IntDeserialize(data.buf, &cursor);
-	CHECK(len >= 0 && len < BUFSIZE);
+	JHNET_CHECK(len >= 0 && len < BUFSIZE);
 	shared_ptr<char[]> buf(new char[len]);
 	memcpy(buf.get(), data.buf + cursor, len);
 	cursor += len;
@@ -485,7 +485,7 @@ void AInGameNetworkProcessor::InGame_RPC(FReciveData& data, int& cursor, int& bu
 	newData.usageHandle = functionHandle;
 
 #ifdef DEBUG_RPC
-	LOG_WARNING("RPC : %s %s", *objectID, *functionHandle);
+	JHNET_LOG_WARNING("RPC : %s %s", *objectID, *functionHandle);
 #endif
 
 	if (!SendToObject(newData)) {
@@ -499,7 +499,7 @@ void AInGameNetworkProcessor::InGame_SyncVar(FReciveData& data, int& cursor, int
 	FString objectID = FStringDeserialize(data.buf, &cursor);
 	FString handle = FStringDeserialize(data.buf, &cursor);
 	int32 len = IntDeserialize(data.buf, &cursor);
-	CHECK(len >= 0 && len < BUFSIZE);
+	JHNET_CHECK(len >= 0 && len < BUFSIZE);
 	shared_ptr<char[]> buf(new char[len]);
 	memcpy(buf.get(), data.buf + cursor, len);
 	cursor += len;
@@ -513,7 +513,7 @@ void AInGameNetworkProcessor::InGame_SyncVar(FReciveData& data, int& cursor, int
 	newData.usageHandle = handle;
 
 #ifdef DEBUG_RPC
-	LOG_WARNING("RPC : %s %s", *objectID, *handle);
+	JHNET_LOG_WARNING("RPC : %s %s", *objectID, *handle);
 #endif
 
 	if (!SendToObject(newData)) {

@@ -38,7 +38,7 @@ void UNetworkSystem::AddSavedData(FReciveData*& newData, FReciveData*& savedData
 		while (true) {
 			len = IntDeserialize(tcpRecvBuf, &cursor);
 			if (len < 0 || len > BUFSIZE) {
-				LOG(Error, "wrong len....");
+				JHNET_LOG(Error, "wrong len....");
 				ReturnObject(savedData);
 				savedData = nullptr;
 				break;
@@ -94,7 +94,7 @@ void UNetworkSystem::DelayData(FReciveData*& newData, FReciveData*& savedData, c
 			ReturnObject(savedData);
 			savedData = nullptr;
 		}
-		LOG_ERROR("Too many delayed buffer.. something will be ignored.. need len = %d, savedLen = %d, delayedLen = %d", 
+		JHNET_LOG_ERROR("Too many delayed buffer.. something will be ignored.. need len = %d, savedLen = %d, delayedLen = %d", 
 			savedData->len + (newData->len - delayIndex), savedData->len, newData->len - delayIndex);
 	}
 	else {
@@ -217,7 +217,7 @@ void UNetworkSystem::SetInGameManager(AInGameManager * inGameManager)
 
 AInGameManager * UNetworkSystem::GetInGameManager()
 {
-	if (InGameManager == nullptr) LOG(Error, "No InGameManager Registered.");
+	if (InGameManager == nullptr) JHNET_LOG(Error, "No InGameManager Registered.");
 	return InGameManager;
 }
 
@@ -258,11 +258,11 @@ void UNetworkSystem::ReturnObject(FReciveData* object)
 bool UNetworkSystem::InitSteam()
 {
 	if (SteamAPI_Init()) {
-		LOG(Warning, "Steam is Running!");
+		JHNET_LOG(Warning, "Steam is Running!");
 		bOnSteam = true;
 	}
 	else {
-		LOG(Warning, "Steam not working.");
+		JHNET_LOG(Warning, "Steam not working.");
 		bOnSteam = false;
 	}
 	return bOnSteam;
@@ -271,7 +271,7 @@ bool UNetworkSystem::InitSteam()
 void UNetworkSystem::ShutdownSteam()
 {
 	if (bOnSteam) {
-		LOG(Warning, "Steam shutdown.");
+		JHNET_LOG(Warning, "Steam shutdown.");
 		SteamAPI_Shutdown();
 		bOnSteam = false;
 	}
@@ -282,31 +282,31 @@ void UNetworkSystem::InitSocket(bool isReconnect) {
 
 	/*WSAData wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
-		LOG_ERROR("InitSocket : WSAStartup error.");
+		JHNET_LOG_ERROR("InitSocket : WSAStartup error.");
 		currentInitState = INIT_FAILED;
 		return;
 	}*/
 
 	bOnServer = true;
-	LOG_WARNING("TCP Init Start.");
+	JHNET_LOG_WARNING("TCP Init Start.");
 	if (!InitTCP(isReconnect)) {
 		ShutdownSocket();
 		bOnServer = false;
-		LOG(Error, "Failed to connect TCP");
+		JHNET_LOG(Error, "Failed to connect TCP");
 		currentInitState = INIT_FAILED;
 		return;
 	}
-	LOG_WARNING("UDP Init Start.");
+	JHNET_LOG_WARNING("UDP Init Start.");
 	if (!InitUDP()) {
 		ShutdownSocket();
 		bOnServer = false;
-		LOG(Error, "Failed to connect UDP");
+		JHNET_LOG(Error, "Failed to connect UDP");
 		currentInitState = INIT_FAILED;
 		return;
 	}
 
 	currentInitState = INIT_SUCCESS;
-	LOG_WARNING("Socket Init Success!!");
+	JHNET_LOG_WARNING("Socket Init Success!!");
 }
 
 bool UNetworkSystem::InitTCP(bool isReconnect)
@@ -349,33 +349,33 @@ bool UNetworkSystem::InitTCP(bool isReconnect)
 
 	SOCKET client_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (client_sock == INVALID_SOCKET) {
-		LOG_ERROR("SOCKET()");
+		JHNET_LOG_ERROR("SOCKET()");
 		return false;
 	}
 
 	int optval = 50; // Timeout : 50ms
 	if (setsockopt(client_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&optval, sizeof(optval)) == SOCKET_ERROR) {
-		LOG_ERROR("sockopt(RCVTIMEO)");
+		JHNET_LOG_ERROR("sockopt(RCVTIMEO)");
 		return false;
 	}
 	optval = true; // Turn off Nagle Algorithm
 	if (setsockopt(client_sock, IPPROTO_TCP, TCP_NODELAY, (char*)&optval, sizeof(optval)) == SOCKET_ERROR) {
-		LOG_ERROR("sockopt(NODELAY)");
+		JHNET_LOG_ERROR("sockopt(NODELAY)");
 		return false;
 	}
 	optval = BUFSIZE; // Set Buf size
 	if (setsockopt(client_sock, SOL_SOCKET, SO_RCVBUF, (char*)&optval, sizeof(optval)) == SOCKET_ERROR) {
-		LOG_ERROR("sockopt(RCVBUF)");
+		JHNET_LOG_ERROR("sockopt(RCVBUF)");
 		return false;
 	}
 
 
 	while (GetSocketState() != INIT_FAILED) {
-		LOG_WARNING("Try to connect TCP.");
+		JHNET_LOG_WARNING("Try to connect TCP.");
 		if (connect(client_sock, (SOCKADDR *)&serveraddr, sizeof(serveraddr)) != INVALID_SOCKET) break;
 	}
 	if (GetSocketState() == INIT_FAILED) {
-		LOG_ERROR("Failed by SOCKET STATE change to failed.");
+		JHNET_LOG_ERROR("Failed by SOCKET STATE change to failed.");
 		return false;
 	}
 
@@ -413,7 +413,7 @@ bool UNetworkSystem::InitTCP(bool isReconnect)
 	}
 
 	hTcpThread = new std::thread(&UNetworkSystem::TCPRecvThread, this);
-	LOG(Warning, "TCP Init Success");
+	JHNET_LOG(Warning, "TCP Init Success");
 	return true;
 }
 
@@ -425,7 +425,7 @@ bool UNetworkSystem::InitUDP()
 	// Create Socket
 	SOCKET sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock == INVALID_SOCKET) {
-		LOG(Error, "UDP :: Can't create sock.");
+		JHNET_LOG(Error, "UDP :: Can't create sock.");
 		return false;
 	}
 
@@ -468,7 +468,7 @@ bool UNetworkSystem::InitUDP()
 
 	// try to connect
 	if (!ConnectUDP()) {
-		LOG(Error, "UDP :: Can't connect.");
+		JHNET_LOG(Error, "UDP :: Can't connect.");
 		return false;
 	}
 	int optval = BUFSIZE; // Set Buf size
@@ -538,7 +538,7 @@ void UNetworkSystem::ShutdownSocket()
 			udpSock = NULL;
 		}
 		//WSACleanup();
-		LOG(Warning, "Socket Shutdown Success");
+		JHNET_LOG(Warning, "Socket Shutdown Success");
 		shutdownLocker.unlock();
 	}
 }
@@ -599,32 +599,32 @@ bool UNetworkSystem::ConnectUDP()
 	optval = 50; // Timeout : 50ms
 	retval = setsockopt(udpSock, SOL_SOCKET, SO_RCVTIMEO, (char*)&optval, sizeof(optval));
 	if (retval == SOCKET_ERROR) {
-		LOG(Error, "UDP :: Can't set recvto sock.");
+		JHNET_LOG(Error, "UDP :: Can't set recvto sock.");
 		return false;
 	}
 
 	// UDP 연결을 시도한다.
 	while(GetSocketState() == INIT_START) {
-		LOG_WARNING("Try to connect UDP.");
+		JHNET_LOG_WARNING("Try to connect UDP.");
 		char buf[sizeof(EMessageType) + sizeof(UINT64)];
 		SerializeEnum(EMessageType::C_UDP_Reg, buf);
 		UInt64Serialize(buf + sizeof(EMessageType), GetSteamID());
 		retval = MyTool::SendTo(udpSock, buf, sizeof(EMessageType) + sizeof(UINT64), (SOCKADDR *)&udpAddr, sizeof(udpAddr));
 		if (retval == SOCKET_ERROR) {
-			LOG(Warning, "UDP send to :: %ld", WSAGetLastError());
+			JHNET_LOG(Warning, "UDP send to :: %ld", WSAGetLastError());
 			continue;
 		}
 
 		retval = RecvUDP(udpRecvBuf, BUFSIZE);
 		if (retval != 0) {
 			if (GetEnum(udpRecvBuf + sizeof(int)) == EMessageType::S_UDP_Response) {
-				LOG(Warning, "UDP :: Success!!!");
+				JHNET_LOG(Warning, "UDP :: Success!!!");
 				break;
 			}
 		}
 		else if (retval == SOCKET_ERROR) {
 			int errCode = WSAGetLastError();
-			if(errCode != WSAETIMEDOUT) LOG(Warning, "UDP RecvUDP FAILED :: %ld", WSAGetLastError());
+			if(errCode != WSAETIMEDOUT) JHNET_LOG(Warning, "UDP RecvUDP FAILED :: %ld", WSAGetLastError());
 			continue;
 		}
 	}
@@ -633,7 +633,7 @@ bool UNetworkSystem::ConnectUDP()
 	optval = 50; // Timeout : 50ms
 	retval = setsockopt(udpSock, SOL_SOCKET, SO_RCVTIMEO, (char*)&optval, sizeof(optval));
 	if (retval == SOCKET_ERROR) {
-		LOG(Error, "UDP :: Can't set recvto sock.");
+		JHNET_LOG(Error, "UDP :: Can't set recvto sock.");
 		return false;
 	}
 
@@ -648,21 +648,21 @@ void UNetworkSystem::UDPRecvThread()
 		if (retval == SOCKET_ERROR || retval == 0) {
 			if (retval == SOCKET_ERROR) {
 				int errNum = WSAGetLastError();
-				if (errNum != WSAETIMEDOUT) LOG_ERROR("Socket Error! : %d", errNum);
+				if (errNum != WSAETIMEDOUT) JHNET_LOG_ERROR("Socket Error! : %d", errNum);
 			}
 			continue;
 		}
 
 		// 수신 처리. 잘렸는지 딜레이 됬는지 처리 후 메세지큐에 넣음.
 		if (retval > BUFSIZE) {
-			LOG(Error, "Recv : Too long buf size..");
+			JHNET_LOG(Error, "Recv : Too long buf size..");
 			continue;
 		}
 		FReciveData* newData = _dataPool->GetObject();
 
 		// 딜레이된 데이터가 존재?
 		if (savedData) {
-			//LOG_WARNING("Delay pop! savedLen = %d, newLen = %d", savedData->len, retval);
+			//JHNET_LOG_WARNING("Delay pop! savedLen = %d, newLen = %d", savedData->len, retval);
 			AddSavedData(newData, savedData, udpRecvBuf, retval);
 		}
 		// 없다면 새로운 데이터로 채웁니다.
@@ -686,7 +686,7 @@ void UNetworkSystem::UDPRecvThread()
 			// 잘려서 들어왔는가?
 			if (cursor + bufLen > newData->len) {
 				cursor -= (int)sizeof(int32_t);
-				//LOG_WARNING("DelayData! cursor:%d, buflen:%d, delayedLen:%d", cursor, bufLen, bufLen - cursor);
+				//JHNET_LOG_WARNING("DelayData! cursor:%d, buflen:%d, delayedLen:%d", cursor, bufLen, bufLen - cursor);
 				DelayData(newData, savedData, cursor);
 				break;
 			}
@@ -713,7 +713,7 @@ void UNetworkSystem::TCPRecvThread()
 		}
 		// 단절됬으면 재접속시도한다.
 		if (retval == 0 || lastError == WSAECONNRESET) {
-			LOG_ERROR("Server has been disconnected!!!");
+			JHNET_LOG_ERROR("Server has been disconnected!!!");
 
 			if (GetSocketState() == INIT_SUCCESS) {
 				std::thread* myThread = hTcpThread;
@@ -733,13 +733,13 @@ void UNetworkSystem::TCPRecvThread()
 		}
 		// 에러는 무시한다.
 		if (lastError != 0) {
-			if(lastError != WSAETIMEDOUT) LOG_ERROR("Socket Error!! %d", WSAGetLastError());
+			if(lastError != WSAETIMEDOUT) JHNET_LOG_ERROR("Socket Error!! %d", WSAGetLastError());
 			continue;
 		}
 
 		// 잘못된 크기
 		if (retval > BUFSIZE) {
-			LOG(Error, "Recv : Too long buf size..");
+			JHNET_LOG(Error, "Recv : Too long buf size..");
 			continue;
 		}
 
@@ -747,7 +747,7 @@ void UNetworkSystem::TCPRecvThread()
 
 		// 딜레이된 데이터가 존재?
 		if (savedData) {
-			//LOG_WARNING("Delay pop! savedLen = %d, newLen = %d", savedData->len, retval);
+			//JHNET_LOG_WARNING("Delay pop! savedLen = %d, newLen = %d", savedData->len, retval);
 			AddSavedData(newData, savedData, tcpRecvBuf, retval);
 		}
 		// 없다면 새로운 데이터로 채웁니다.
@@ -771,7 +771,7 @@ void UNetworkSystem::TCPRecvThread()
 			// 잘려서 들어왔는가?
 			if (cursor + bufLen > newData->len) {
 				cursor -= (int)sizeof(int32_t);
-				//LOG_WARNING("DelayData! cursor:%d, buflen:%d, delayedLen:%d", cursor, bufLen, newData->len - cursor);
+				//JHNET_LOG_WARNING("DelayData! cursor:%d, buflen:%d, delayedLen:%d", cursor, bufLen, newData->len - cursor);
 				DelayData(newData, savedData, cursor);
 				break;
 			}
@@ -787,14 +787,14 @@ void UNetworkSystem::TCPRecvThread()
 
 void UNetworkSystem::Init() {
 	if (!InitSteam()) {
-		LOG(Warning, "Steam Init Failed");
+		JHNET_LOG(Warning, "Steam Init Failed");
 	}
 	PostInitSocket();
 }
 
 void UNetworkSystem::Shutdown()
 {
-	LOG(Warning, "SHUTDOWN");
+	JHNET_LOG(Warning, "SHUTDOWN");
 	ShutdownSteam();
 	ShutdownSocket();
 }
@@ -803,7 +803,7 @@ void UNetworkSystem::SetSteamID_DUBGE(const UINT64 & steamID)
 {
 	if (defaultSteamID == 0) defaultSteamID = steamID;
 	else {
-		LOG(Warning, "Already have fake steam ID!!");
+		JHNET_LOG(Warning, "Already have fake steam ID!!");
 		return;
 	}
 	ShutdownSteam();

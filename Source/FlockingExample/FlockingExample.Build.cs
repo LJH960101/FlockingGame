@@ -12,6 +12,6 @@ public class FlockingExample : ModuleRules
         DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "OnlineSubsystem", "OnlineSubsystemUtils", "UMG", "JHNET"});
         PublicAdditionalLibraries.Add(rootPath + @"\Source\ThirdParty\Steamworks\steam_api64.lib");
-        PrivateDependencyModuleNames.AddRange(new string[] { "JHNET"});
+        PrivateDependencyModuleNames.AddRange(new string[] { "JHNET" });
     }
 }

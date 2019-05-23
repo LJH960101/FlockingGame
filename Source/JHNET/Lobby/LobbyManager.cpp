@@ -29,7 +29,7 @@ ALobbyManager::ALobbyManager()
 	}
 	else
 	{
-		LOG_S(Error);
+		JHNET_LOG_S(Error);
 	}
 
 	// Friend list WG
@@ -39,7 +39,7 @@ ALobbyManager::ALobbyManager()
 	}
 	else
 	{
-		LOG_S(Error);
+		JHNET_LOG_S(Error);
 	}
 
 	// Setting WG
@@ -49,7 +49,7 @@ ALobbyManager::ALobbyManager()
 	}
 	else
 	{
-		LOG_S(Error);
+		JHNET_LOG_S(Error);
 	}
 
 	// Invite Request WG
@@ -59,7 +59,7 @@ ALobbyManager::ALobbyManager()
 	}
 	else
 	{
-		LOG_S(Error);
+		JHNET_LOG_S(Error);
 	}
 
 	// Failed WG
@@ -69,7 +69,7 @@ ALobbyManager::ALobbyManager()
 	}
 	else
 	{
-		LOG_S(Error);
+		JHNET_LOG_S(Error);
 	}
 }
 void ALobbyManager::RefreshList()
@@ -102,7 +102,7 @@ void ALobbyManager::BeginPlay()
 	TArray<AActor*> outActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALobbyNetworkProcessor::StaticClass(), outActors);
 	if (outActors.Num() <= 0) {
-		LOG(Error, "Can't get LobbyNetworkProcessor.");
+		JHNET_LOG(Error, "Can't get LobbyNetworkProcessor.");
 	}
 	else {
 		_lobbyNetworkProcessor = Cast<ALobbyNetworkProcessor>(outActors[0]);

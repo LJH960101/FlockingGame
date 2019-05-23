@@ -149,7 +149,7 @@ FVector MySerializer::Vector3Deserialize(const char * buf, int* cursor)
 int MySerializer::StringSerialize(char * buf, const char * source, const int & len)
 {
 	if (len >= MAX_STRING_BUF) {
-		LOG_ERROR("Wrong String...");
+		JHNET_LOG_ERROR("Wrong String...");
 		return 0;
 	}
 	int retval = IntSerialize(buf, len);
@@ -161,7 +161,7 @@ FSerializableString MySerializer::StringDeserialize(const char * buf, int* curso
 {
 	int len = IntDeserialize(buf, cursor);
 	if (len >= MAX_STRING_BUF || len < 0) {
-		LOG_ERROR("Wrong String...");
+		JHNET_LOG_ERROR("Wrong String...");
 		*cursor = BUFSIZE + 10000;
 		return FSerializableString();
 	}

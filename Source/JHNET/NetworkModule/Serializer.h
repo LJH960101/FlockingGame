@@ -3,30 +3,31 @@
 #include "NetworkData.h"
 #include <stdint.h>
 #include "JHNET.h"
+#define DLL_EXPORT __declspec(dllexport)
 
 namespace MySerializer {
-	int SerializeEnum(const EMessageType& type, char* outBuf);
-	int SerializeWithEnum(const EMessageType& type, const char* inBuf, const int& bufLen, char* outBuf);
-	EMessageType GetEnum(char* buf, int* cursor = nullptr);
-	int BoolSerialize(char* buf, const bool& data);
-	bool BoolDeserialize(const char* buf, int* cursor = nullptr);
-	int CharSerialize(char* buf, const char& data);
-	char CharDeserialize(const char* buf, int* cursor = nullptr);
-	int IntSerialize(char* buf, const int32_t& val);
-	int32_t IntDeserialize(const char* buf, int* cursor = nullptr);
-	int UInt64Serialize(char* buf, const unsigned __int64& val);
-	unsigned __int64 UInt64Deserialize(const char* buf, int* cursor = nullptr);
-	int FloatSerialize(char* buf, const float& val);
-	float FloatDeserialize(const char* buf, int* cursor = nullptr);
-	int Vector3Serialize(char* buf, const FVector& val);
-	FVector Vector3Deserialize(const char* buf, int* cursor = nullptr);
-	int StringSerialize(char* buf, const char* source, const int& len);
-	FSerializableString StringDeserialize(const char* buf, int* cursor = nullptr);
-	int StringSerialize(char* buf, std::string source);
-	FString FStringDeserialize(const char* buf, int* cursor = nullptr);
-	int FStringSerialize(char* buf, const FString& source, int maxLen = 1000);
-	void Serialize(char* source, char* dest, int size);
-	void DeSerialize(const char* source, char* dest, int size);
+	JHNET_API int SerializeEnum(const EMessageType& type, char* outBuf);
+	JHNET_API int SerializeWithEnum(const EMessageType& type, const char* inBuf, const int& bufLen, char* outBuf);
+	JHNET_API EMessageType GetEnum(char* buf, int* cursor = nullptr);
+	JHNET_API int BoolSerialize(char* buf, const bool& data);
+	JHNET_API bool BoolDeserialize(const char* buf, int* cursor = nullptr);
+	JHNET_API int CharSerialize(char* buf, const char& data);
+	JHNET_API char CharDeserialize(const char* buf, int* cursor = nullptr);
+	JHNET_API int IntSerialize(char* buf, const int32_t& val);
+	JHNET_API int32_t IntDeserialize(const char* buf, int* cursor = nullptr);
+	JHNET_API int UInt64Serialize(char* buf, const unsigned __int64& val);
+	JHNET_API unsigned __int64 UInt64Deserialize(const char* buf, int* cursor = nullptr);
+	JHNET_API int FloatSerialize(char* buf, const float& val);
+	JHNET_API float FloatDeserialize(const char* buf, int* cursor = nullptr);
+	JHNET_API int Vector3Serialize(char* buf, const FVector& val);
+	JHNET_API FVector Vector3Deserialize(const char* buf, int* cursor = nullptr);
+	JHNET_API int StringSerialize(char* buf, const char* source, const int& len);
+	JHNET_API FSerializableString StringDeserialize(const char* buf, int* cursor = nullptr);
+	JHNET_API int StringSerialize(char* buf, std::string source);
+	JHNET_API FString FStringDeserialize(const char* buf, int* cursor = nullptr);
+	JHNET_API int FStringSerialize(char* buf, const FString& source, int maxLen = 1000);
+	JHNET_API void Serialize(char* source, char* dest, int size);
+	JHNET_API void DeSerialize(const char* source, char* dest, int size);
 
 	// DeSerializer
 	template<typename T>
