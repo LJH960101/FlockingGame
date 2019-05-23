@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "LobbyNetworkProcessor.h"
-#include "Core/HACKEDGameInstance.h"
+#include "Core/JHNETGameInstance.h"
 #include "Core/Network/NetworkSystem.h"
 #include "Lobby/LobbyManager.h"
-#include "Lobby/FriendInfo.h"
+#include "Lobby/Widget/WGFriendInfo.h"
 #include "Blueprint/UserWidget.h"
 #include "NetworkModule/Serializer.h"
 #include "NetworkModule/MyTool.h"
@@ -45,7 +45,7 @@ void ALobbyNetworkProcessor::RecvProc(FReciveData& data)
 	while (cursor < data.len) {
 		int bufLen = IntDeserialize(data.buf, &cursor) - sizeof(EMessageType);
 		EMessageType type = GetEnum(data.buf, &cursor);
-		UINT64 sid = Cast<UHACKEDGameInstance>(GetGameInstance())->GetNetworkSystem()->GetSteamID();
+		UINT64 sid = Cast<UJHNETGameInstance>(GetGameInstance())->GetNetworkSystem()->GetSteamID();
 		switch (type)
 		{
 		case EMessageType::S_Room_Info:
@@ -125,7 +125,7 @@ void ALobbyNetworkProcessor::Lobby_InviteFriendRequest(FReciveData& data, int& c
 void ALobbyNetworkProcessor::Lobby_InviteFriendFailed(FReciveData& data, int& cursor, int& bufLen)
 {
 	FSerializableString msg = StringDeserialize(data.buf, &cursor);
-	LobbyManager->OpenLobbyFailedWG(msg.buf);
+	LobbyManager->OpenLobbyWGFailed(msg.buf);
 }
 
 void ALobbyNetworkProcessor::Lobby_MatchAnswer(FReciveData& data, int& cursor, int& bufLen)

@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "FriendInfo.h"
+#include "WGFriendInfo.h"
 #include "Steamworks/Steamv139/sdk/public/steam/steam_api.h"
-#include "Core/HACKEDGameInstance.h"
+#include "Core/JHNETGameInstance.h"
 #include "Core/Network/NetworkSystem.h"
 #include "Engine/Texture2D.h"
 #include <string>
@@ -10,18 +10,18 @@
 UFriendInformation::UFriendInformation() {}
 UFriendInformation::~UFriendInformation() {
 }
-UFriendInfo::UFriendInfo() {
+UWGFriendInfo::UWGFriendInfo() {
 }
-UFriendInfo::~UFriendInfo() {
+UWGFriendInfo::~UWGFriendInfo() {
 	InitArray();
 }
-void UFriendInfo::RefreshFriendInfo() {
+void UWGFriendInfo::RefreshFriendInfo() {
 	auto world = GetWorld();
 	if (world == nullptr) {
 		LOG(Error, "Get World Error");
 		return;
 	}
-	UHACKEDGameInstance* gameInstance = Cast<UHACKEDGameInstance>(world->GetGameInstance());
+	UJHNETGameInstance* gameInstance = Cast<UJHNETGameInstance>(world->GetGameInstance());
 	if (gameInstance == nullptr) {
 		LOG(Error, "GameInstance Casting Error");
 		return;
@@ -53,7 +53,7 @@ void UFriendInfo::RefreshFriendInfo() {
 		LOG(Warning, "Steam is not running.");
 	}
 }
-UFriendInformation * UFriendInfo::GetFriendInformationBySteamID(const UINT64 & id)
+UFriendInformation * UWGFriendInfo::GetFriendInformationBySteamID(const UINT64 & id)
 {
 	for (int i = 0; i < FriendInformations.Num(); ++i) {
 		if (FriendInformations[i]->steamID == id) {
@@ -63,7 +63,7 @@ UFriendInformation * UFriendInfo::GetFriendInformationBySteamID(const UINT64 & i
 	return nullptr;
 }
 
-void UFriendInfo::InitArray()
+void UWGFriendInfo::InitArray()
 {
 	FriendInformations.Empty();
 }

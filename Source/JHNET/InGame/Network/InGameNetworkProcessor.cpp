@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 //#define DEBUG_RPC
 #include "InGameNetworkProcessor.h"
-#include "Core/HACKEDGameInstance.h"
+#include "Core/JHNETGameInstance.h"
 #include "Core/Network/NetworkSystem.h"
 #include "InGame/InGameManager.h"
 #include "NetworkModule/Serializer.h"
@@ -24,7 +24,7 @@ AInGameNetworkProcessor::AInGameNetworkProcessor()
 	NetBaseCP = CreateDefaultSubobject<UNetworkBaseCP>(TEXT("Network Base"));
 	_slotAndName.Init(TTuple<bool,FString>(false,""), MAX_PLAYER);
 	
-	static ConstructorHelpers::FClassFinder<UUserWidget> DisConnectWidget(TEXT("/Game/Blueprint/UI/InGame/Common/WG_Disconnect.WG_Disconnect_C"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> DisConnectWidget(TEXT("WidgetBlueprint'/Game/NetworkUI/WB_Connect.WB_Connect_C'"));
 	if (DisConnectWidget.Succeeded()) {
 		_disconnectWGClass = DisConnectWidget.Class;
 	}

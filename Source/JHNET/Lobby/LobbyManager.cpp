@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "LobbyManager.h"
-#include "FriendInfo.h"
+#include "Widget/WGFriendInfo.h"
 #include "Steamworks/Steamv139/sdk/public/steam/steam_api.h"
 #include "NetworkModule/Serializer.h"
-#include "Core/HACKEDGameInstance.h"
+#include "Core/JHNETGameInstance.h"
 #include "Core/Network/NetworkSystem.h"
-#include "Common/UI/FailedWG.h"
-#include "WidgetFriendRequest.h"
+#include "Common/Widget/WGFailed.h"
+#include "Widget/WGFriendRequest.h"
 #include "Network/LobbyNetworkProcessor.h"
 #include "NetworkModule/MyTool.h"
 #include <memory>
@@ -23,9 +23,9 @@ ALobbyManager::ALobbyManager()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// Lobby WG
-	static ConstructorHelpers::FClassFinder<ULobbyWG> lobbyWG(TEXT("/Game/Blueprint/UI/Lobby/WB_Lobby.WB_Lobby_C"));
-	if (lobbyWG.Succeeded()) {
-		WG_Lobby_Class = lobbyWG.Class;
+	static ConstructorHelpers::FClassFinder<UWGLobby> WGLobby(TEXT("WidgetBlueprint'/Game/NetworkUI/WB_LobbyMain.WB_LobbyMain_C'"));
+	if (WGLobby.Succeeded()) {
+		WG_Lobby_Class = WGLobby.Class;
 	}
 	else
 	{
@@ -33,7 +33,7 @@ ALobbyManager::ALobbyManager()
 	}
 
 	// Friend list WG
-	static ConstructorHelpers::FClassFinder<UUserWidget> friendWG(TEXT("/Game/Blueprint/UI/Lobby/WB_FriendPopUp.WB_FriendPopUp_C"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> friendWG(TEXT("WidgetBlueprint'/Game/NetworkUI/WB_LobbyFriendPopUp.WB_LobbyFriendPopUp_C'"));
 	if (friendWG.Succeeded()) {
 		WG_Friend_Class = friendWG.Class;
 	}
@@ -43,7 +43,7 @@ ALobbyManager::ALobbyManager()
 	}
 
 	// Setting WG
-	static ConstructorHelpers::FClassFinder<UUserWidget> settingWG(TEXT("/Game/Blueprint/UI/Lobby/WB_Setting.WB_Setting_C"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> settingWG(TEXT("WidgetBlueprint'/Game/NetworkUI/WB_LobbySetting.WB_LobbySetting_C'"));
 	if (settingWG.Succeeded()) {
 		WG_Setting_Class = settingWG.Class;
 	}
@@ -53,7 +53,7 @@ ALobbyManager::ALobbyManager()
 	}
 
 	// Invite Request WG
-	static ConstructorHelpers::FClassFinder<UWidgetFriendRequest> inviteRequestWG(TEXT("/Game/Blueprint/UI/Lobby/WB_FriendRequest.WB_FriendRequest_C"));
+	static ConstructorHelpers::FClassFinder<UWGFriendRequest> inviteRequestWG(TEXT("WidgetBlueprint'/Game/NetworkUI/WB_LobbyFriendRequest.WB_LobbyFriendRequest_C'"));
 	if (inviteRequestWG.Succeeded()) {
 		WG_RequestInvite_Class = inviteRequestWG.Class;
 	}
@@ -63,9 +63,9 @@ ALobbyManager::ALobbyManager()
 	}
 
 	// Failed WG
-	static ConstructorHelpers::FClassFinder<UFailedWG> failedWG(TEXT("/Game/Blueprint/UI/Common/WB_Failed.WB_Failed_C"));
-	if (failedWG.Succeeded()) {
-		WG_Failed_Class = failedWG.Class;
+	static ConstructorHelpers::FClassFinder<UWGFailed> WGFailed(TEXT("WidgetBlueprint'/Game/NetworkUI/WB_Failed.WB_Failed_C'"));
+	if (WGFailed.Succeeded()) {
+		WG_Failed_Class = WGFailed.Class;
 	}
 	else
 	{
@@ -82,11 +82,11 @@ void ALobbyManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	friendInfos = NewObject<UFriendInfo>(this);
+	friendInfos = NewObject<UWGFriendInfo>(this);
 	friendInfos->RefreshFriendInfo();
 
 	if (WG_Lobby == nullptr) {
-		WG_Lobby = CreateWidget<ULobbyWG>(GetWorld(), WG_Lobby_Class);
+		WG_Lobby = CreateWidget<UWGLobby>(GetWorld(), WG_Lobby_Class);
 		WG_Lobby->AddToViewport();
 	}
 
@@ -113,7 +113,7 @@ void ALobbyManager::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	gameInstance = Cast<UHACKEDGameInstance>(GetGameInstance());
+	gameInstance = Cast<UJHNETGameInstance>(GetGameInstance());
 }
 
 int ALobbyManager::GetFriendLen()
@@ -223,15 +223,15 @@ void ALobbyManager::OnClickSetting()
 
 void ALobbyManager::OpenRequestInviteWG(const FString& steamID, const FString& userName)
 {
-	if (WG_RequestInvite == nullptr) WG_RequestInvite = CreateWidget<UWidgetFriendRequest>(GetWorld(), WG_RequestInvite_Class);
+	if (WG_RequestInvite == nullptr) WG_RequestInvite = CreateWidget<UWGFriendRequest>(GetWorld(), WG_RequestInvite_Class);
 	WG_RequestInvite->AddToViewport();
 	WG_RequestInvite->SetSteamID(steamID);
 	WG_RequestInvite->SetUserName(userName);
 }
 
-void ALobbyManager::OpenLobbyFailedWG(const FString& msg)
+void ALobbyManager::OpenLobbyWGFailed(const FString& msg)
 {
-	if (WG_Failed == nullptr) WG_Failed = CreateWidget<UFailedWG>(GetWorld(), WG_Failed_Class);
+	if (WG_Failed == nullptr) WG_Failed = CreateWidget<UWGFailed>(GetWorld(), WG_Failed_Class);
 	WG_Failed->AddToViewport();
 }
 
@@ -259,11 +259,11 @@ void ALobbyManager::ChangePartyKing(const int32& slot, const FString& steamID)
 	UINT64 uintSteamID = FStringToUINT64(steamID);
 	// Only party king can do this proc
 	if (slots[0]->steamID != "0" && myId != FStringToUINT64(slots[0]->steamID)) {
-		OpenLobbyFailedWG("Only party king can change.");
+		OpenLobbyWGFailed("Only party king can change.");
 	}
 	// Can't be the target myself.
 	if (myId == uintSteamID) {
-		OpenLobbyFailedWG("You already party king.");
+		OpenLobbyWGFailed("You already party king.");
 	}
 
 	shared_ptr<char[]> allBuf(new char[sizeof(EMessageType) + sizeof(int)]);
@@ -293,7 +293,7 @@ void ALobbyManager::OnClickFriend()
 void ALobbyManager::OnReady(bool isOn)
 {
 	if (slots[0] == nullptr) {
-		OpenLobbyFailedWG("Can't connect to server.");
+		OpenLobbyWGFailed("Can't connect to server.");
 		return;
 	}
 	shared_ptr<char[]> allBuf(new char[sizeof(EMessageType) + sizeof(bool)]);
@@ -321,7 +321,7 @@ void ALobbyManager::Kick(const int32& slot, const FString& steamID)
 	UINT64 uintSteamID = FStringToUINT64(steamID);
 	// Only work on kick myself or party king
 	if (!(myId == uintSteamID || (slots[0]->steamID != "0" && myId == FStringToUINT64(slots[0]->steamID)))) {
-		OpenLobbyFailedWG("Only party king can kick other members.");
+		OpenLobbyWGFailed("Only party king can kick other members.");
 		return;
 	}
 

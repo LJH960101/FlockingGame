@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "WidgetFriendRequest.generated.h"
+#include "WGFriendRequest.generated.h"
 
 /**
  * Friend WG inside of friend list WG.
  */
 UCLASS()
-class JHNET_API UWidgetFriendRequest : public UUserWidget
+class JHNET_API UWGFriendRequest : public UUserWidget
 {
 	GENERATED_BODY()
 public:

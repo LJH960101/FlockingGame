@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "WidgetFriendRequest.h"
+#include "WGFriendRequest.h"
 
-void UWidgetFriendRequest::SetSteamID(FString steamID)
+void UWGFriendRequest::SetSteamID(FString steamID)
 {
 	_steamID = steamID;
 }

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CommonNetworkProcessor.h"
-#include "Core/HACKEDGameInstance.h"
+#include "Core/JHNETGameInstance.h"
 #include "Core/Network/NetworkSystem.h"
 #include "NetworkModule/Serializer.h"
 #include "NetworkModule/GameInfo.h"
@@ -17,13 +17,13 @@ ACommonNetworkProcessor::ACommonNetworkProcessor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	static ConstructorHelpers::FClassFinder<UUserWidget> ServerConnectWidget(TEXT("WidgetBlueprint'/Game/Blueprint/UI/Common/WB_Connect.WB_Connect_C'"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> ServerConnectWidget(TEXT("WidgetBlueprint'/Game/NetworkUI/WB_Connect.WB_Connect_C'"));
 	if (ServerConnectWidget.Succeeded()) {
 		_serverConnectWGClass = ServerConnectWidget.Class;
 	}
 }
 
-UHACKEDGameInstance* ACommonNetworkProcessor::GetGameInstance() {
+UJHNETGameInstance* ACommonNetworkProcessor::GetGameInstance() {
 	return _gameInstance;
 }
 
@@ -37,7 +37,7 @@ void ACommonNetworkProcessor::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	_gameInstance = Cast<UHACKEDGameInstance>(AActor::GetGameInstance());
+	_gameInstance = Cast<UJHNETGameInstance>(AActor::GetGameInstance());
 	CHECK(_gameInstance);
 	_netSystem = _gameInstance->GetNetworkSystem();
 	CHECK(_netSystem);

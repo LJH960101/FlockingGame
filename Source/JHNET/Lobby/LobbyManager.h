@@ -4,14 +4,14 @@
 #include "NetworkModule/GameInfo.h"
 #include "JHNET.h"
 #include "GameFramework/Actor.h"
-#include "LobbyWG.h"
+#include "Widget/WGLobby.h"
 #include "Blueprint/UserWidget.h"
-#include "RoomPlayer.h"
+#include "Widget/RoomPlayer.h"
 #include "LobbyManager.generated.h"
 
-class UFriendInfo;
+class UWGFriendInfo;
 class UFriendInformation;
-class UHACKEDGameInstance;
+class UJHNETGameInstance;
 class URoomPlayer;
 class ALobbyNetworkProcessor;
 
@@ -21,21 +21,21 @@ class JHNET_API ALobbyManager : public AActor
 	GENERATED_BODY()
 private:
 	UPROPERTY()
-	UFriendInfo* friendInfos;
+	UWGFriendInfo* friendInfos;
 
 	UPROPERTY()
 	ALobbyNetworkProcessor* _lobbyNetworkProcessor;
 
 	UPROPERTY()
-	UHACKEDGameInstance* gameInstance;
+	UJHNETGameInstance* gameInstance;
 
 	UPROPERTY()
 	URoomPlayer* slots[MAX_PLAYER];
 
 	UPROPERTY()
-	TSubclassOf<class ULobbyWG> WG_Lobby_Class;
+	TSubclassOf<class UWGLobby> WG_Lobby_Class;
 	UPROPERTY()
-	ULobbyWG* WG_Lobby;
+	UWGLobby* WG_Lobby;
 
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> WG_Setting_Class;
@@ -50,12 +50,12 @@ private:
 	bool onFriend;
 
 	UPROPERTY()
-	TSubclassOf<class UWidgetFriendRequest> WG_RequestInvite_Class;
+	TSubclassOf<class UWGFriendRequest> WG_RequestInvite_Class;
 	UPROPERTY()
-	UWidgetFriendRequest* WG_RequestInvite;
+	UWGFriendRequest* WG_RequestInvite;
 
 	UPROPERTY()
-	TSubclassOf<class UFailedWG> WG_Failed_Class;
+	TSubclassOf<class UWGFailed> WG_Failed_Class;
 	UPROPERTY()
 	UUserWidget* WG_Failed;
 
@@ -117,7 +117,7 @@ public:
 	void OnClickFriend();
 
 	void OpenRequestInviteWG(const FString& steamID, const FString& userName);
-	void OpenLobbyFailedWG(const FString& msg = "Unknown error.");
+	void OpenLobbyWGFailed(const FString& msg = "Unknown error.");
 
 	UFUNCTION(BlueprintCallable)
 	int32 GetMaxPlayer();

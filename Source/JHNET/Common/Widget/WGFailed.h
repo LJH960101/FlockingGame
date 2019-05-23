@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "FailedWG.generated.h"
+#include "WGFailed.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class JHNET_API UFailedWG : public UUserWidget
+class JHNET_API UWGFailed : public UUserWidget
 {
 	GENERATED_BODY()
 	

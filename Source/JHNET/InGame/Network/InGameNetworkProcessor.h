@@ -46,7 +46,7 @@ private:
 	// Other Network Classes
 	class AInGameManager* InGameManager;
 	class UNetworkSystem* _networkSystem;
-	class UHACKEDGameInstance* _gameInstance;
+	class UJHNETGameInstance* _gameInstance;
 	class UNetworkBaseCP* NetBaseCP;
 
 	// Network Actors

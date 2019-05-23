@@ -4,7 +4,7 @@
 
 #include "JHNET.h"
 #include "UObject/NoExportTypes.h"
-#include "FriendInfo.generated.h"
+#include "WGFriendInfo.generated.h"
 
 // Class that contains info about friend.
 UCLASS()
@@ -25,12 +25,12 @@ class CSteamID;
  * UObject that include friend list
  */
 UCLASS()
-class JHNET_API UFriendInfo : public UObject
+class JHNET_API UWGFriendInfo : public UObject
 {
 	GENERATED_BODY()
 public:
-	UFriendInfo();
-	~UFriendInfo();
+	UWGFriendInfo();
+	~UWGFriendInfo();
 	void RefreshFriendInfo();
 	UPROPERTY()
 	TArray<UFriendInformation*> FriendInformations;

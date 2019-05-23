@@ -9,7 +9,7 @@
 #include "CommonNetworkProcessor.generated.h"
 
 struct FReciveData;
-class UHACKEDGameInstance;
+class UJHNETGameInstance;
 class UNetworkSystem;
 
 typedef TTuple<std::shared_ptr<char[]>, int> TPacket;
@@ -42,7 +42,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void RecvProc(FReciveData& data);
-	UHACKEDGameInstance* GetGameInstance();
+	UJHNETGameInstance* GetGameInstance();
 	UNetworkSystem* GetNetworkSystem();
 
 	// Called when room is changed.
@@ -54,7 +54,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UHACKEDGameInstance* _gameInstance;
+	UJHNETGameInstance* _gameInstance;
 	class UNetworkSystem* _netSystem;
 
 	// 배열 0은 TCP, 1은 UDP로 사용한다.

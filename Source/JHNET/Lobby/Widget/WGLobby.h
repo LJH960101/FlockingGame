@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/Texture2D.h"
-#include "LobbyWG.generated.h"
+#include "WGLobby.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class JHNET_API ULobbyWG : public UUserWidget
+class JHNET_API UWGLobby : public UUserWidget
 {
 	GENERATED_BODY()
 	
