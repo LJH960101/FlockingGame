@@ -9,6 +9,6 @@ public class FlockingExampleEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 
-		ExtraModuleNames.AddRange( new string[] { "FlockingExample" } );
+		ExtraModuleNames.AddRange( new string[] { "FlockingExample", "JHNET" } );
 	}
 }

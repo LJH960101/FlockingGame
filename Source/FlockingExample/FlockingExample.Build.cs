@@ -5,19 +5,13 @@ using UnrealBuildTool;
 public class FlockingExample : ModuleRules
 {
 	public FlockingExample(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
-
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
-
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-		
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
-
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
-	}
+    {
+        PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS");
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        var rootPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(ModuleDirectory, "../../"));
+        DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "OnlineSubsystem", "OnlineSubsystemUtils", "UMG", "JHNET"});
+        PublicAdditionalLibraries.Add(rootPath + @"\Source\ThirdParty\Steamworks\steam_api64.lib");
+        PrivateDependencyModuleNames.AddRange(new string[] { "JHNET"});
+    }
 }

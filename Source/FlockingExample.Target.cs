@@ -9,6 +9,6 @@ public class FlockingExampleTarget : TargetRules
 	{
 		Type = TargetType.Game;
 
-		ExtraModuleNames.AddRange( new string[] { "FlockingExample" } );
+		ExtraModuleNames.AddRange( new string[] { "FlockingExample", "JHNET" } );
 	}
 }
