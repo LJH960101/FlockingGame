@@ -119,8 +119,8 @@ void AMyPlayer::OnShoot()
 	FVector EndPos = StartPos + CameraCP->GetForwardVector() * ShootRange;
 	FCollisionQueryParams TraceParams(NAME_None, false, this);
 	GetWorld()->LineTraceSingleByChannel(Hit, StartPos, EndPos, ECC_GameTraceChannel1, TraceParams);
-	DrawDebugLine(GetWorld(), StartPos, EndPos, Hit.bBlockingHit ? FColor::Green : FColor::Red,
-		false, 1.0f);
+	/*DrawDebugLine(GetWorld(), StartPos, EndPos, Hit.bBlockingHit ? FColor::Green : FColor::Red,
+		false, 1.0f);*/
 
 	if (Hit.GetActor() && Cast<ABoid>(Hit.GetActor())) {
 		ABoid* boid = Cast<ABoid>(Hit.GetActor());

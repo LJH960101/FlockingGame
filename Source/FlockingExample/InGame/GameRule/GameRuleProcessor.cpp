@@ -35,7 +35,6 @@ void AGameRuleProcessor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	_timeRemain = GAME_TIME;
 	_bOnGame = false;
 
 	BindRPCFunction(NetBaseCP, AGameRuleProcessor, StartGame);

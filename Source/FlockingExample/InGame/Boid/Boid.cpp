@@ -78,13 +78,19 @@ void ABoid::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!leader) {
-		FloatingPawnMovement->Velocity = FVector::ZeroVector;
+	_syncTimer -= DeltaTime;
+	if (_syncTimer <= 0.0f) {
+		_syncTimer = syncTime;
+		if (!leader) {
+			_desireVelocity = FVector::ZeroVector;
+		}
+		else {
+			Flocking();
+			_desireVelocity = direction * currentSpeed;
+		}
 	}
-	else {
-		Flocking();
-		FloatingPawnMovement->Velocity = direction * currentSpeed;
-	}
+	_currentVelocity = FMath::Lerp(_currentVelocity, _desireVelocity, 1.0f - (_syncTimer / syncTime));
+	FloatingPawnMovement->Velocity = _currentVelocity;
 }
 
 void ABoid::DrawDebug(float DeltaTime)

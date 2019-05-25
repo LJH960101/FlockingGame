@@ -551,6 +551,7 @@ void AInGameNetworkProcessor::InGame_ReconnectSlot(FReciveData& data, int& curso
 
 void AInGameNetworkProcessor::EndGame(FReciveData& data, int& cursor, int& bufLen)
 {
+	GetNetworkSystem()->SetInGameManager(nullptr);
 	UGameplayStatics::OpenLevel(GetWorld(), "Lobby");
 }
 

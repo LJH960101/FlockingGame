@@ -47,6 +47,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Flocking")
 	bool isSeperation = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Flocking")
+	float syncTime = 0.5f;
+
 	RPC_FUNCTION(ABoid, MASTERSetLeader, int32)
 	UFUNCTION(BlueprintCallable, Category = "Flocking")
 	void MASTERSetLeader(int32 slot);
@@ -86,4 +89,8 @@ private:
 	void RPCSetLeader(int32 slot);
 
 	void SetLeader(AMyPlayer* newLeader);
+
+	FVector _desireVelocity;
+	FVector _currentVelocity;
+	float _syncTimer = 0.0f;
 };

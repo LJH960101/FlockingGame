@@ -7,8 +7,6 @@
 #include "InGame/Network/Component/NetworkBaseCP.h"
 #include "GameRuleProcessor.generated.h"
 
-const float GAME_TIME = 5.0f;
-
 UCLASS()
 class FLOCKINGEXAMPLE_API AGameRuleProcessor : public AActor
 {
@@ -34,7 +32,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameRule")
 	void OnEndGame();
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float _timeRemain = 60.0f;
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,7 +51,5 @@ public:
 	AGameRuleProcessor();
 
 private:
-	float _timeRemain = GAME_TIME;
 	bool _bOnGame = false;
-
 };
