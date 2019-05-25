@@ -21,10 +21,11 @@ struct FReplicationData
 
 // Spawnable actor's enum.
 // You must add enum to add new class spawner.
-// also need to add in GetClassByType.
+// also need to add in member var "classes".
 UENUM(BlueprintType)
 enum class ENetSpawnType : uint8
 {
+	BOID		UMETA(DisplayName = "BOID"),
 	MAX			UMETA(DisplayName = "MAX")
 };
 
@@ -32,6 +33,44 @@ UCLASS()
 class JHNET_API AInGameNetworkProcessor : public ACommonNetworkProcessor
 {
 	GENERATED_BODY()
+
+public:
+	// Sets default values for this actor's properties
+	AInGameNetworkProcessor();
+	~AInGameNetworkProcessor();
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+	UNetworkSystem* GetNetworkSystem();
+
+	// Identification
+	void RefreshSlot();
+	UFUNCTION(BlueprintPure)
+		bool IsMaster();
+	UFUNCTION(BlueprintPure)
+		bool IsSlave();
+	uint64 GetHashNumber(const FString& actorName);
+	UFUNCTION(BlueprintPure)
+		int32 GetCurrentSlot();
+	UFUNCTION(BlueprintPure, Category = "Network")
+		FString GetMyName();
+	UFUNCTION(BlueprintPure, Category = "Network")
+		FString GetSlotName(int32 slot);
+	int GetPlayerNumbs();
+
+	UFUNCTION(BlueprintCallable, Category = "Network")
+		void EndGame();
+
+	// Network Actors
+	bool AddObject(AActor* networkActor);
+	void RemoveObject(AActor* networkActor);
+
+	// 누락된 데이터를 즉시 받습니다.
+	void GetSyncDataForce(AActor* networkActor);
+
+	// NetworkSpawn
+	// Spawn new actor. Only work on server.
+	UFUNCTION(BlueprintCallable)
+	AActor* NetworkSpawn(ENetSpawnType type, FVector position, FVector rotation, FVector scale);
 	
 	// Spawnable Actor classes.
 private:
@@ -71,7 +110,7 @@ private:
 	// Get UClass By Type. You must add case to add new class spawner.
 	UClass* GetClassByType(const ENetSpawnType& type);
 	// Call by receive msg or owner's spawn action.
-	AActor* NetworkSpawned(ENetSpawnType type, FVector position, FQuat rotation, const FString& objectID);
+	AActor* NetworkSpawned(ENetSpawnType type, FVector position, FVector rotation, FVector scale, const FString& objectID);
 
 	// Network RPC / SyncVar
 	// JHNET_CHECK delayed data.
@@ -94,44 +133,6 @@ private:
 	TSubclassOf<class UUserWidget> _disconnectWGClass;
 	UPROPERTY()
 	class UUserWidget* _disconnectWG = nullptr;
-
-public:
-	// Sets default values for this actor's properties
-	AInGameNetworkProcessor();
-	~AInGameNetworkProcessor();
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-	UNetworkSystem* GetNetworkSystem();
-	
-	// Identification
-	void RefreshSlot();
-	UFUNCTION(BlueprintPure)
-	bool IsMaster();
-	UFUNCTION(BlueprintPure)
-	bool IsSlave();
-	uint64 GetHashNumber(const FString& actorName);
-	UFUNCTION(BlueprintPure)
-	int32 GetCurrentSlot();
-	UFUNCTION(BlueprintCallable, Category = "Network")
-	FString GetMyName();
-	UFUNCTION(BlueprintCallable, Category = "Network")
-	FString GetSlotName(int32 slot);
-	int GetPlayerNumbs();
-
-	UFUNCTION(BlueprintCallable, Category = "Network")
-	void EndGame();
-
-	// Network Actors
-	bool AddObject(AActor* networkActor);
-	void RemoveObject(AActor* networkActor);
-
-	// 누락된 데이터를 즉시 받습니다.
-	void GetSyncDataForce(AActor* networkActor);
-
-	// NetworkSpawn
-	// Spawn new actor. Only work on server.
-	UFUNCTION(BlueprintCallable)
-	AActor* NetworkSpawn(ENetSpawnType type, FVector position, FQuat rotation);
 
 protected:
 	// Called when the game starts or when spawned

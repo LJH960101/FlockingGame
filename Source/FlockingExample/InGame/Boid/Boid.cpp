@@ -3,7 +3,6 @@
 
 #include "Boid.h"
 #include "DrawDebugHelpers.h"
-#include "InGame/Player/MyPlayer.h"
 #include "GameFramework/FloatingPawnMovement.h"
 
 // Sets default values
@@ -12,6 +11,37 @@ ABoid::ABoid()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	FloatingPawnMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("Floating Pawn Movement Component"));
+	NetBaseCP = CreateDefaultSubobject<UNetworkBaseCP>(TEXT("NetBaseCP"));
+}
+
+void ABoid::MASTERSetLeader(int32 slot)
+{
+	RPC(NetBaseCP, ABoid, MASTERSetLeader, ENetRPCType::MASTER, true, slot);
+	if (leader == nullptr) {
+		RPCSetLeader(slot);
+	}
+}
+
+AActor* ABoid::GetLeader()
+{
+	return Cast<AActor>(leader);
+}
+
+void ABoid::RPCSetLeader(int32 slot)
+{
+	RPC(NetBaseCP, ABoid, RPCSetLeader, ENetRPCType::MULTICAST, true, slot);
+
+	TArray<AActor*> outActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMyPlayer::StaticClass(), outActors);
+
+	for (auto actor : outActors) {
+		AMyPlayer* player = Cast<AMyPlayer>(actor);
+		if (!player) continue;
+		if (player->NetBaseCP->GetCurrentAuthority() == slot) {
+			SetLeader(player);
+			return;
+		}
+	}
 }
 
 void ABoid::SetLeader(AMyPlayer* newLeader)
@@ -21,7 +51,7 @@ void ABoid::SetLeader(AMyPlayer* newLeader)
 		leader->OnBoidNumChange();
 	}
 	leader = newLeader;
-	leader->OnBoidNumChange();
+	leader->AttachBoid(this);
 	OnLeaderChange();
 }
 
@@ -38,6 +68,9 @@ void ABoid::DestroyBoid()
 void ABoid::BeginPlay()
 {
 	Super::BeginPlay();
+
+	BindRPCFunction(NetBaseCP, ABoid, MASTERSetLeader);
+	BindRPCFunction(NetBaseCP, ABoid, RPCSetLeader);
 }
 
 // Called every frame

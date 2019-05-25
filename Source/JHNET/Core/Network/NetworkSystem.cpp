@@ -3,7 +3,7 @@
 #include "NetworkSystem.h"
 #include "Steamworks/Steamv139/sdk/public/steam/steam_api.h"
 #include "NetworkModule/Serializer.h"
-#include "NetworkModule/MyTool.h"
+#include "NetworkModule/NetworkTool.h"
 #include "InGame/InGameManager.h"
 #include "InGame/Network/InGameNetworkProcessor.h"
 #include <string>
@@ -13,7 +13,7 @@
 
 using std::mutex;
 using std::shared_ptr;
-using namespace MyTool;
+using namespace NetworkTool;
 using namespace MySerializer;
 
 void UNetworkSystem::SetCurrentSlot(int32 slot)
@@ -110,6 +110,7 @@ UNetworkSystem::UNetworkSystem()
 
 	for (int i = 0; i < MAX_PLAYER; ++i)
 		steamIds[i] = 0;
+	steamIds[0] = GetSteamID();
 }
 UNetworkSystem::~UNetworkSystem()
 {
@@ -241,12 +242,12 @@ void UNetworkSystem::Send(const char* buf, int len, bool isTCP, bool withoutLen 
 {
 	if (!OnServer()) return;
 	if (isTCP) {
-		if (withoutLen) MyTool::SendWithoutLen(tcpSock, buf, len, 0);
-		else MyTool::Send(tcpSock, buf, len, 0);
+		if (withoutLen) NetworkTool::SendWithoutLen(tcpSock, buf, len, 0);
+		else NetworkTool::Send(tcpSock, buf, len, 0);
 	}
 	else {
-		if (withoutLen) MyTool::SendToWithoutLen(udpSock, buf, len, (SOCKADDR*)& udpAddr, sizeof(udpAddr));
-		else MyTool::SendTo(udpSock, buf, len, (SOCKADDR *)&udpAddr, sizeof(udpAddr));
+		if (withoutLen) NetworkTool::SendToWithoutLen(udpSock, buf, len, (SOCKADDR*)& udpAddr, sizeof(udpAddr));
+		else NetworkTool::SendTo(udpSock, buf, len, (SOCKADDR *)&udpAddr, sizeof(udpAddr));
 	}
 }
 
@@ -399,7 +400,7 @@ bool UNetworkSystem::InitTCP(bool isReconnect)
 			len += UInt64Serialize(buf + len, GetSteamID(i));
 
 		// 여기서는 서버가 완전히 켜져있는 상태가 아니므로 멤버가 아닌 직접적인 함수로 통신한다.
-		MyTool::Send(tcpSock, buf, len, 0);
+		NetworkTool::Send(tcpSock, buf, len, 0);
 	}
 	else {
 		// Reconnect가 아니라면 ID를 알려주고 넘어간다.
@@ -409,7 +410,7 @@ bool UNetworkSystem::InitTCP(bool isReconnect)
 		int totalLen = SerializeWithEnum(EMessageType::C_Common_AnswerId, idBuf, len, sendBuf);
 
 		// 여기서는 서버가 완전히 켜져있는 상태가 아니므로 멤버가 아닌 직접적인 함수로 통신한다.
-		MyTool::Send(tcpSock, sendBuf, totalLen, 0);
+		NetworkTool::Send(tcpSock, sendBuf, totalLen, 0);
 	}
 
 	hTcpThread = new std::thread(&UNetworkSystem::TCPRecvThread, this);
@@ -609,7 +610,7 @@ bool UNetworkSystem::ConnectUDP()
 		char buf[sizeof(EMessageType) + sizeof(UINT64)];
 		SerializeEnum(EMessageType::C_UDP_Reg, buf);
 		UInt64Serialize(buf + sizeof(EMessageType), GetSteamID());
-		retval = MyTool::SendTo(udpSock, buf, sizeof(EMessageType) + sizeof(UINT64), (SOCKADDR *)&udpAddr, sizeof(udpAddr));
+		retval = NetworkTool::SendTo(udpSock, buf, sizeof(EMessageType) + sizeof(UINT64), (SOCKADDR *)&udpAddr, sizeof(udpAddr));
 		if (retval == SOCKET_ERROR) {
 			JHNET_LOG(Warning, "UDP send to :: %ld", WSAGetLastError());
 			continue;

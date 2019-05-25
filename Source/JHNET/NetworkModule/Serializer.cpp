@@ -1,9 +1,9 @@
 #define INCL_EXTRA_HTON_FUNCTIONS
 #include "Serializer.h"
 #include <stdio.h>
-#include "MyTool.h"
+#include "NetworkTool.h"
 #include "NetworkModule/GameInfo.h"
-using namespace MyTool;
+using namespace NetworkTool;
 
 int MySerializer::SerializeEnum(const EMessageType & type, char * outBuf)
 {

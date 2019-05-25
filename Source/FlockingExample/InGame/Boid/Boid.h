@@ -4,6 +4,8 @@
 
 #include "EngineMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "InGame/Player/MyPlayer.h"
+#include "InGame/Network/Component/NetworkBaseCP.h"
 #include "Boid.generated.h"
 
 UCLASS()
@@ -11,7 +13,10 @@ class FLOCKINGEXAMPLE_API ABoid : public APawn
 {
 	GENERATED_BODY()
 	
-public:	
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Network")
+	class UNetworkBaseCP* NetBaseCP;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flocking")
 	class UFloatingPawnMovement* FloatingPawnMovement;
 
@@ -19,7 +24,7 @@ public:
 	ABoid();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Flocking")
-	class AMyPlayer* leader;
+	AMyPlayer* leader;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Flocking")
 	FVector direction;
@@ -42,8 +47,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Flocking")
 	bool isSeperation = false;
 
+	RPC_FUNCTION(ABoid, MASTERSetLeader, int32)
 	UFUNCTION(BlueprintCallable, Category = "Flocking")
-	void SetLeader(AMyPlayer* newLeader);
+	void MASTERSetLeader(int32 slot);
+
+	UFUNCTION(BlueprintPure, Category = "Flocking")
+	AActor* GetLeader();
 
 	// 리더가 바뀌었다는것을 블루프린트에 통지.
 	// 리더와 같은 마테리얼로 바꿉니다.
@@ -72,4 +81,9 @@ private:
 	FVector FollowLeader();
 	FVector Avoid();
 	void Flocking();
+
+	RPC_FUNCTION(ABoid, RPCSetLeader, int32)
+	void RPCSetLeader(int32 slot);
+
+	void SetLeader(AMyPlayer* newLeader);
 };

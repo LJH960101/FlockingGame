@@ -1,12 +1,12 @@
-#include "MyTool.h"
+#include "NetworkTool.h"
 #include "Serializer.h"
 #include <memory>
 
 using namespace std;
-using namespace MyTool;
+using namespace NetworkTool;
 using namespace MySerializer;
 
-int MyTool::Send(SOCKET sock, const char * buf, int len, int flags)
+int NetworkTool::Send(SOCKET sock, const char * buf, int len, int flags)
 {
 	shared_ptr<char[]> newBuf(new char[len + sizeof(int)]);
 	int intLen = IntSerialize(newBuf.get(), len);
@@ -14,12 +14,12 @@ int MyTool::Send(SOCKET sock, const char * buf, int len, int flags)
 	return SendWithoutLen(sock, newBuf.get(), len + intLen, flags);
 }
 
-int MyTool::SendWithoutLen(SOCKET sock, const char* buf, int len, int flags)
+int NetworkTool::SendWithoutLen(SOCKET sock, const char* buf, int len, int flags)
 {
 	return send(sock, buf, len, flags);
 }
 
-int MyTool::SendTo(SOCKET sock, const char* buf, const int& len, sockaddr* addr, const int& addrLen)
+int NetworkTool::SendTo(SOCKET sock, const char* buf, const int& len, sockaddr* addr, const int& addrLen)
 {
 	shared_ptr<char[]> newBuf(new char[len + sizeof(int)]);
 	int intLen = IntSerialize(newBuf.get(), len);
@@ -27,12 +27,12 @@ int MyTool::SendTo(SOCKET sock, const char* buf, const int& len, sockaddr* addr,
 	return SendToWithoutLen(sock, newBuf.get(), len + intLen, addr, addrLen, 0);
 }
 
-int MyTool::SendToWithoutLen(SOCKET sock, const char* buf, const int& len, sockaddr* addr, const int& addrLen, int flags)
+int NetworkTool::SendToWithoutLen(SOCKET sock, const char* buf, const int& len, sockaddr* addr, const int& addrLen, int flags)
 {
 	return sendto(sock, buf, len, flags, addr, addrLen);
 }
 
-bool MyTool::IsBigEndian()
+bool NetworkTool::IsBigEndian()
 {
 	static bool onInit = false;
 	static bool isBigEndian = false;
@@ -53,12 +53,12 @@ bool MyTool::IsBigEndian()
 	return isBigEndian;
 }
 
-FString MyTool::UINT64ToFString(const UINT64 val)
+FString NetworkTool::UINT64ToFString(const UINT64 val)
 {
 	return FString::Printf(TEXT("%llu"), val);
 }
 
-UINT64 MyTool::FStringToUINT64(const FString val)
+UINT64 NetworkTool::FStringToUINT64(const FString val)
 {
 	return FCString::Strtoui64(*val, NULL, 10);
 }

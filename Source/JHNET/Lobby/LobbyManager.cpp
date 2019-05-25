@@ -9,11 +9,11 @@
 #include "Common/Widget/WGFailed.h"
 #include "Widget/WGFriendRequest.h"
 #include "Network/LobbyNetworkProcessor.h"
-#include "NetworkModule/MyTool.h"
+#include "NetworkModule/NetworkTool.h"
 #include <memory>
 
 using std::shared_ptr;
-using namespace MyTool;
+using namespace NetworkTool;
 using namespace MySerializer;
 
 // Sets default values
@@ -94,9 +94,10 @@ void ALobbyManager::BeginPlay()
 	for (int i = 0; i < MAX_PLAYER; ++i) {
 		URoomPlayer* slot = NewObject<URoomPlayer>(URoomPlayer::StaticClass());
 		slots[i] = slot;
-		ChangeSlot(i, 0);
+		ChangeSlot(i, gameInstance->GetNetworkSystem()->GetSteamID(i));
 	}
 	RefreshLobby();
+
 
 	// Error when NetworkProcessor not spawned.
 	TArray<AActor*> outActors;

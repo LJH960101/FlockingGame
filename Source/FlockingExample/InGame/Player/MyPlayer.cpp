@@ -21,6 +21,14 @@ void AMyPlayer::OnBoidNumChange()
 
 }
 
+void AMyPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	if (NewController == UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
+		_bOnMove = true;
+	}
+}
+
 // Sets default values
 AMyPlayer::AMyPlayer()
 {
@@ -33,6 +41,7 @@ AMyPlayer::AMyPlayer()
 	SpringArmCP = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmCP"));
 	CameraCP = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraCP"));
 	FloatingPawnMovementCP = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("FloatingPawnMovement"));
+	NetBaseCP = CreateDefaultSubobject<UNetworkBaseCP>(TEXT("NetBaseCP"));
 
 	RootComponent = CapsuleCP;
 	SkeletalMeshCP->AttachToComponent(CapsuleCP, FAttachmentTransformRules::KeepRelativeTransform);
@@ -63,6 +72,9 @@ void AMyPlayer::BeginPlay()
 	Super::BeginPlay();
 	_currentSprintGuage = SprintLimit;
 	_bCanSprint = true;
+
+	BindRPCFunction(NetBaseCP, AMyPlayer, RPCShootBoid);
+	BindRPCFunction(NetBaseCP, AMyPlayer, RPCShootVector);
 }
 
 void AMyPlayer::OnMoveUp(float Value)
@@ -110,13 +122,12 @@ void AMyPlayer::OnShoot()
 	DrawDebugLine(GetWorld(), StartPos, EndPos, Hit.bBlockingHit ? FColor::Green : FColor::Red,
 		false, 1.0f);
 
-	if (Hit.GetActor()) {
-		ShootParticle(Hit.Location);
+	if (Hit.GetActor() && Cast<ABoid>(Hit.GetActor())) {
 		ABoid* boid = Cast<ABoid>(Hit.GetActor());
-		if (boid) boid->DestroyBoid();
+		RPCShootBoid(boid->GetName());
 	}
 	else {
-		ShootParticle(EndPos);
+		RPCShootVector(EndPos);
 	}
 }
 
@@ -125,10 +136,17 @@ void AMyPlayer::DetachBoid(ABoid* boid)
 	_boids.Remove(boid);
 }
 
+void AMyPlayer::StopMovement()
+{
+	_bOnMove = false;
+}
+
 // Called every frame
 void AMyPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (!_bOnMove || !(NetBaseCP->HasAuthority())) return;
 
 	FVector moveVector = (CameraCP->GetForwardVector() * _forwardInputRate +
 		CameraCP->GetRightVector() * _rightInputRate +
@@ -175,13 +193,38 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMyPlayer::OnShoot);
 }
 
+void AMyPlayer::RPCShootBoid(FString boidName)
+{
+	RPC(NetBaseCP, AMyPlayer, RPCShootBoid, ENetRPCType::MULTICAST, true, boidName);
+	TArray<AActor*> outActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABoid::StaticClass(), outActors);
+	for (auto i : outActors) {
+		if (i->GetName() == boidName) {
+			ABoid* boid = Cast<ABoid>(i);
+			if (!boid) break;
+			ShootParticleToActor(boid);
+			boid->DestroyBoid();
+			break;
+		}
+	}
+}
+
+void AMyPlayer::RPCShootVector(FVector pos)
+{
+	RPC(NetBaseCP, AMyPlayer, RPCShootVector, ENetRPCType::MULTICAST, true, pos);
+	ShootParticleToVector(pos);
+}
+
+void AMyPlayer::AttachBoid(ABoid* boid)
+{
+	_boids.Add(boid);
+	_currentSprintGuage += SprintLimit * 0.5f;
+	_currentSprintGuage = FMath::Clamp(_currentSprintGuage, 0.0f, SprintLimit);
+	OnBoidNumChange();
+}
+
 void AMyPlayer::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	ABoid* boid = Cast<ABoid>(OtherActor);
-	if (boid && !(_boids.Contains(boid))) {
-		boid->SetLeader(this);
-		_boids.Add(boid);
-		_currentSprintGuage += SprintLimit * 0.5f;
-		_currentSprintGuage = FMath::Clamp(_currentSprintGuage, 0.0f, SprintLimit);
-	}
+	if(boid) boid->MASTERSetLeader(NetBaseCP->GetCurrentAuthority());
 }

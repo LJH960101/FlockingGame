@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "InGame/Network/Component/NetworkBaseCP.h"
 #include "MyPlayer.generated.h"
 
 class ABoid;
@@ -14,6 +15,9 @@ class FLOCKINGEXAMPLE_API AMyPlayer : public APawn
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Network")
+	class UNetworkBaseCP* NetBaseCP;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flocking")
 	class UFloatingPawnMovement* FloatingPawnMovementCP;
 
@@ -66,6 +70,8 @@ public:
 
 	// 보이드의 수가 변했을때의 처리입니다.
 	void OnBoidNumChange();
+	
+	virtual void PossessedBy(AController* NewController);
 
 	// Sets default values for this pawn's properties
 	AMyPlayer();
@@ -86,10 +92,19 @@ protected:
 public:	
 	// 파티클을 재생합니다.
 	UFUNCTION(BlueprintImplementableEvent, Category = "Shoot")
-	void ShootParticle(FVector pos);
+	void ShootParticleToVector(FVector pos);
+
+	// 파티클을 재생합니다.
+	UFUNCTION(BlueprintImplementableEvent, Category = "Shoot")
+	void ShootParticleToActor(AActor* actor);
 
 	UFUNCTION(BlueprintCallable, Category = "Boid")
 	void DetachBoid(ABoid* boid);
+
+	UFUNCTION(BlueprintCallable)
+	void StopMovement();
+
+	void AttachBoid(ABoid* boid);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -98,6 +113,12 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
+	RPC_FUNCTION(AMyPlayer, RPCShootBoid, FString)
+	void RPCShootBoid(FString boidName);
+
+	RPC_FUNCTION(AMyPlayer, RPCShootVector, FVector)
+	void RPCShootVector(FVector pos);
+
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -111,6 +132,8 @@ private:
 	bool _bOnSprint;
 
 	bool _bCanSprint;
+
+	bool _bOnMove = false;
 
 	// 따라오는 보이드들
 	TArray<ABoid*> _boids;

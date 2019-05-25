@@ -7,9 +7,9 @@
 #include "Lobby/Widget/WGFriendInfo.h"
 #include "Blueprint/UserWidget.h"
 #include "NetworkModule/Serializer.h"
-#include "NetworkModule/MyTool.h"
+#include "NetworkModule/NetworkTool.h"
 
-using namespace MyTool;
+using namespace NetworkTool;
 using namespace MySerializer;
 
 // Sets default values

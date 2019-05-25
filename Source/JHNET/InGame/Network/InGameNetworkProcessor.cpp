@@ -5,13 +5,14 @@
 #include "Core/Network/NetworkSystem.h"
 #include "InGame/InGameManager.h"
 #include "NetworkModule/Serializer.h"
-#include "NetworkModule/MyTool.h"
+#include "NetworkModule/NetworkTool.h"
 #include "NetworkModule/GameInfo.h"
 #include "Blueprint/UserWidget.h"
 #include "NetworkModule/Serializer.h"
 #include "InGame/Interface/Networkable.h"
+#include "InGame/JHNETTool.h"
 
-using namespace MyTool;
+using namespace NetworkTool;
 using namespace std;
 using namespace MySerializer;
 
@@ -28,6 +29,11 @@ AInGameNetworkProcessor::AInGameNetworkProcessor()
 	if (DisConnectWidget.Succeeded()) {
 		_disconnectWGClass = DisConnectWidget.Class;
 	}
+
+	UClass* boidClass = nullptr;
+	GetClassAsset(boidClass, AActor, "Blueprint'/Game/Blueprint/BP_Boid.BP_Boid_C'");
+
+	classes.Add(ENetSpawnType::BOID, boidClass);
 }
 
 // FString name, int slot
@@ -338,18 +344,18 @@ void AInGameNetworkProcessor::SetSteamID_DEBUG(const FString & steamID)
 	_networkSystem->SetSteamID_DUBGE(FStringToUINT64(steamID));
 }
 
-AActor * AInGameNetworkProcessor::NetworkSpawn(ENetSpawnType type, FVector position, FQuat rotation)
+AActor * AInGameNetworkProcessor::NetworkSpawn(ENetSpawnType type, FVector position, FVector rotation, FVector scale)
 {
 	if (!IsMaster()) {
 		JHNET_LOG_SCREEN("NetworkSpawn only work on master.");
 		return nullptr;
 	}
 	uint64 currentSpawnCount = _spawnCount++;
-	AActor* retval = NetworkSpawned(type, position, rotation, FString::Printf(TEXT("NetworkSpawn%llu"), currentSpawnCount));
+	AActor* retval = NetworkSpawned(type, position, rotation, scale, FString::Printf(TEXT("NetworkSpawn%llu"), currentSpawnCount));
 
 	// Send to other client
 	if (_networkSystem->OnServer() && retval) {
-		shared_ptr<char[]> buf(new char[sizeof(EMessageType) + sizeof(uint64) + sizeof(int32) + sizeof(float) * 6]);
+		shared_ptr<char[]> buf(new char[sizeof(EMessageType) + sizeof(uint64) + sizeof(int32) + sizeof(float) * 9]);
 		int cursor = 0;
 
 		// Create Buffer
@@ -357,7 +363,8 @@ AActor * AInGameNetworkProcessor::NetworkSpawn(ENetSpawnType type, FVector posit
 		cursor += UInt64Serialize(buf.get() + cursor, currentSpawnCount);
 		cursor += IntSerialize(buf.get() + cursor, static_cast<int32>(type));
 		cursor += Vector3Serialize(buf.get() + cursor, position);
-		cursor += Vector3Serialize(buf.get() + cursor, rotation.Euler());
+		cursor += Vector3Serialize(buf.get() + cursor, rotation);
+		cursor += Vector3Serialize(buf.get() + cursor, scale);
 
 		Send(buf, cursor, true);
 	}
@@ -373,15 +380,25 @@ UClass * AInGameNetworkProcessor::GetClassByType(const ENetSpawnType& type)
 	else return classes[type];
 }
 
-AActor* AInGameNetworkProcessor::NetworkSpawned(ENetSpawnType type, FVector position, FQuat rotation, const FString& objectID)
+AActor* AInGameNetworkProcessor::NetworkSpawned(ENetSpawnType type, FVector position, FVector rotation, FVector scale, const FString& objectID)
+
 {
 	AActor* retval;
 	UClass* spawnClass = GetClassByType(type);
 	JHNET_CHECK(spawnClass, nullptr);
+
+	FActorSpawnParameters spawnParms;
+	spawnParms.bNoFail = true;
+	spawnParms.Name = *(objectID);
+	spawnParms.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
 	FTransform newTransform = FTransform::Identity;
 	newTransform.SetLocation(position);
-	newTransform.SetRotation(rotation);
-	retval = GetWorld()->SpawnActor(spawnClass);
+	newTransform.SetRotation(FQuat::MakeFromEuler(rotation));
+	newTransform.SetScale3D(scale);
+
+	retval = GetWorld()->SpawnActor(spawnClass, &newTransform, spawnParms);
+
 	if (!retval) {
 		JHNET_LOG(Error, "Can't spawn actor!!!");
 		return nullptr;
@@ -459,10 +476,9 @@ void AInGameNetworkProcessor::InGame_Spawn(FReciveData& data, int& cursor, int& 
 	uint64 currentSpawnCount = UInt64Deserialize(data.buf, &cursor);
 	ENetSpawnType spawnType = static_cast<ENetSpawnType>(IntDeserialize(data.buf, &cursor));
 	FVector location = Vector3Deserialize(data.buf, &cursor);
-	FVector rotationVector = Vector3Deserialize(data.buf, &cursor);
-	FQuat rotation = FQuat::Identity;
-	rotation.MakeFromEuler(rotationVector);
-	NetworkSpawned(spawnType, location, rotation, FString::Printf(TEXT("NetworkSpawn%llu"), currentSpawnCount));
+	FVector rotation = Vector3Deserialize(data.buf, &cursor);
+	FVector scale = Vector3Deserialize(data.buf, &cursor);
+	NetworkSpawned(spawnType, location, rotation, scale, FString::Printf(TEXT("NetworkSpawn%llu"), currentSpawnCount));
 }
 
 void AInGameNetworkProcessor::InGame_RPC(FReciveData& data, int& cursor, int& bufLen)

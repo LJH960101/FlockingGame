@@ -5,7 +5,7 @@
 #include <WinSock2.h>
 #include "HideWindowsPlatformTypes.h"
 
-namespace MyTool {
+namespace NetworkTool {
 	// Send with len(int)
 	int Send(SOCKET sock, const char* buf, int len, int flags = 0);
 	int SendTo(SOCKET sock, const char* buf, const int& len, sockaddr* addr, const int& addrLen);
