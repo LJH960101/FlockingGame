@@ -8,6 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "NetworkModule/Serializer.h"
 #include "NetworkModule/NetworkTool.h"
+#include "NetworkModule/ConfigParser.h"
 
 using namespace NetworkTool;
 using namespace MySerializer;
@@ -35,6 +36,14 @@ void ALobbyNetworkProcessor::BeginPlay()
 	}
 	else {
 		LobbyManager = (ALobbyManager*)actors[0];
+	}
+
+	// Skip Check
+	CConfigParser parser(NETWORK_CONFIG_PATH);
+	if (parser.IsSuccess()) {
+		if (parser.GetBool("singleplay")) {
+			UGameplayStatics::OpenLevel(GetWorld(), GameName);
+		}
 	}
 }
 
@@ -137,7 +146,6 @@ void ALobbyNetworkProcessor::Lobby_MatchAnswer(FReciveData& data, int& cursor, i
 
 void ALobbyNetworkProcessor::Lobby_GameStart(FReciveData& data, int& cursor, int& bufLen)
 {
-	// EDIT HERE TO CHANGE LEVEL TARGET
 	UGameplayStatics::OpenLevel(GetWorld(), GameName);
 }
 

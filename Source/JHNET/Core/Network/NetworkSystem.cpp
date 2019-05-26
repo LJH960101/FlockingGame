@@ -4,6 +4,7 @@
 #include "Steamworks/Steamv139/sdk/public/steam/steam_api.h"
 #include "NetworkModule/Serializer.h"
 #include "NetworkModule/NetworkTool.h"
+#include "NetworkModule/ConfigParser.h"
 #include "InGame/InGameManager.h"
 #include "InGame/Network/InGameNetworkProcessor.h"
 #include <string>
@@ -320,31 +321,11 @@ bool UNetworkSystem::InitTCP(bool isReconnect)
 	serveraddr.sin_family = AF_INET;
 
 	// Get IP by Absolute Text file
-	std::ifstream ipText(*(FPaths::ProjectDir() + FString(IP_TEXT_PATH)));
-	std::ifstream ipText2(*(FPaths::RootDir() + FString(IP_TEXT_PATH)));
-	std::ifstream ipText3(*(FString("C:\\") + FString(IP_TEXT_PATH)));
-	if (ipText.is_open()) {
-		char buf[100];
-		ipText >> buf;
-		serveraddr.sin_addr.s_addr = inet_addr(buf);
-	}
-	else if (ipText2.is_open())
-	{
-		char buf[100];
-		ipText2 >> buf;
-		serveraddr.sin_addr.s_addr = inet_addr(buf);
-	}
-	else if (ipText3.is_open())
-	{
-		char buf[100];
-		ipText3 >> buf;
-		serveraddr.sin_addr.s_addr = inet_addr(buf);
-	}
-	else serveraddr.sin_addr.s_addr = inet_addr(TCHAR_TO_ANSI(*ipAdress));
-
-	if (ipText.is_open()) ipText.close();
-	if (ipText2.is_open()) ipText2.close();
-	if (ipText3.is_open()) ipText3.close();
+	CConfigParser parser(NETWORK_CONFIG_PATH);
+	if (parser.IsSuccess())
+		serveraddr.sin_addr.s_addr = inet_addr(parser.GetString("ip").c_str());
+	else
+		serveraddr.sin_addr.s_addr = inet_addr(TCHAR_TO_ANSI(*ipAdress));
 
 	serveraddr.sin_port = htons(TCP_SERVER_PORT);
 
@@ -436,31 +417,11 @@ bool UNetworkSystem::InitUDP()
 	serveraddr.sin_family = AF_INET;
 
 	// Get IP by Absolute Text file
-	std::ifstream ipText(*(FPaths::ProjectDir() + FString(IP_TEXT_PATH)));
-	std::ifstream ipText2(*(FPaths::RootDir() + FString(IP_TEXT_PATH)));
-	std::ifstream ipText3(*(FString("C:\\") + FString(IP_TEXT_PATH)));
-	if (ipText.is_open()) {
-		char buf[100];
-		ipText >> buf;
-		serveraddr.sin_addr.s_addr = inet_addr(buf);
-	}
-	else if (ipText2.is_open())
-	{
-		char buf[100];
-		ipText2 >> buf;
-		serveraddr.sin_addr.s_addr = inet_addr(buf);
-	}
-	else if (ipText3.is_open())
-	{
-		char buf[100];
-		ipText3 >> buf;
-		serveraddr.sin_addr.s_addr = inet_addr(buf);
-	}
-	else serveraddr.sin_addr.s_addr = inet_addr(TCHAR_TO_ANSI(*ipAdress));
-
-	if (ipText.is_open()) ipText.close();
-	if (ipText2.is_open()) ipText2.close();
-	if (ipText3.is_open()) ipText3.close();
+	CConfigParser parser(NETWORK_CONFIG_PATH);
+	if (parser.IsSuccess())
+		serveraddr.sin_addr.s_addr = inet_addr(parser.GetString("ip").c_str());
+	else 
+		serveraddr.sin_addr.s_addr = inet_addr(TCHAR_TO_ANSI(*ipAdress));
 
 	serveraddr.sin_port = htons(UDP_SERVER_PORT);
 

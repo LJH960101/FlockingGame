@@ -412,5 +412,5 @@ ASALocalRun/
 !Binaries/Win64/steam_appid.txt
 !Binaries/Win64/steam_api64.lib
 
-# IP
-ip.txt
+# Network Config
+networkConfig.ini

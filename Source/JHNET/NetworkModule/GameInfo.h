@@ -5,4 +5,4 @@
 #define STEAM_APP_CODE 480
 #define MAX_PLAYER 4
 #define BUFSIZE 10000
-#define IP_TEXT_PATH "ip.txt"
+#define NETWORK_CONFIG_PATH "networkConfig.ini"

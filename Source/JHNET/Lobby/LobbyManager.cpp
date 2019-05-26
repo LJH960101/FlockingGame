@@ -98,7 +98,6 @@ void ALobbyManager::BeginPlay()
 	}
 	RefreshLobby();
 
-
 	// Error when NetworkProcessor not spawned.
 	TArray<AActor*> outActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALobbyNetworkProcessor::StaticClass(), outActors);
